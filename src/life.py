@@ -12,23 +12,43 @@ rules = np.array(
     [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 )
 
+rules = np.random.randint(2, size=512)
+
 world = World(100, rules)
 
-def generate_data():
-    world.advance(100)
-    return world.cells
+x = []
+y = []
+
 
 def update(data):
     mat.set_data(data)
-    return mat 
+    #x.append(world.time)
+    #y.append(world.get_population()[1])
+    #line.set_data(x, y)
+    #fig.gca().relim()
+    #fig.gca().autoscale_view()    
+    #line.axes.axis([0, 10, 0, 1])
+    #ax[1].plot(world.time,world.get_population()[1],'.',color='black')
+    ##line, = ax[1].plot(x,y)
+    #p = ax[1].fill_between(x, y, color='#539ecd')
+    return mat#, line, p
+# end function 
 
 def data_gen():
     while True:
-        yield generate_data()
+        world.advance(1)
+        yield world.cells
+    # end while
+# end function
 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots()#(2, 1, gridspec_kw={'height_ratios': [4, 2]})
+fig.canvas.set_window_title('Live')
+#fig.gca().grid()
 mat = ax.matshow(world.cells)
+#line, = ax[1].plot(x,y,color='k')
 #plt.colorbar(mat)
-ani = animation.FuncAnimation(fig, update, data_gen, interval=100,
-                              save_count=50)
+ani = animation.FuncAnimation(fig, update, data_gen, 
+    interval=10, blit=False)
+#ax[1].set_ylim([0.0,1.0])
+
 plt.show()
