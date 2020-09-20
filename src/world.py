@@ -38,7 +38,7 @@ class World:
 
     def advance(self, ticks):
         # execute specified number of ticks
-        for i in range(ticks):
+        for _ in range(ticks):
             self.tick()
         # end for
         # output statistics
