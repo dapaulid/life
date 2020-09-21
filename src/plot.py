@@ -12,6 +12,7 @@ class Plot:
         self.world = None
         self.mat = None
         self.ani = None
+        self.paused = False
     # end function
 
     def update(self, data):
@@ -49,6 +50,16 @@ class Plot:
 
         # do not block in interactive mode (python -i)
         plt.show(block=not sys.flags.interactive)
+    # end function
+
+    def pause(self):
+        if self.paused:
+            self.ani.event_source.start()
+            self.paused = False
+        else:
+            self.ani.event_source.stop()
+            self.paused = True
+        # end if
     # end function
 
 # end class

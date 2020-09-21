@@ -1,12 +1,10 @@
 import numpy as np
-import scipy.ndimage as ndimage
-import constants as c
 from statistic import TimingStat
 
 class World:
-    def __init__(self, radius, rules):
+    def __init__(self, radius, rule):
         self.radius = radius
-        self.rules = rules
+        self.rule = rule
         self.diameter = radius * 2 + 1
         self.reset()
     # end function
@@ -18,20 +16,16 @@ class World:
         self.cells[self.radius, self.radius] = 1
         # statistics
         self.tick_stat = TimingStat()
-        self.rules_count = np.zeros(self.rules.size, dtype=int)
+        self.rule_count = np.zeros(self.rule.size, dtype=int)
     # end function
 
     def tick(self):
         self.tick_stat.start()
-        # TODO optimized convolve function?
-        # http://blog.rtwilson.com/convolution-in-python-which-function-to-use/#:~:text=convolve%20is%20about%20twice%20as,convolve2d.&text=Using%20a%20random%208000%20x,a%20loop%20of%20various%20convolutions.
-        idx = ndimage.convolve(self.cells, c.NEIGH, 
-            mode='wrap')
-        # determine next state by applying the rules
-        self.cells = self.rules[idx] # same as self.rules.take(idx), but seems faster
+        # apply the rule
+        self.cells, idx = self.rule.apply(self.cells)
         # statistics: increment counter for those rules applied
-        self.rules_count += np.bincount(idx.flatten(), 
-            minlength=self.rules_count.size)
+        self.rule_count += np.bincount(idx.flatten(), 
+            minlength=self.rule_count.size)
         self.tick_stat.stop()
         self.time += 1
     # end function
@@ -50,7 +44,7 @@ class World:
     # end function
 
     def get_total_rules_used(self):
-        return np.count_nonzero(self.rules_count) / self.rules_count.size
+        return np.count_nonzero(self.rule_count) / self.rule_count.size
     # end function
 
 # end class
