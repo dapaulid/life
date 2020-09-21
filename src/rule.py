@@ -2,7 +2,6 @@ import numpy as np
 import scipy.ndimage as ndimage
 import json
 import os
-import math
 
 # convolution kernel used to determine index into rule array for each cell neighborhood
 NEIGH_KERNEL = np.array(
@@ -18,7 +17,7 @@ class Rule:
 			self.size = self.states**NEIGH_KERNEL.size
 			self.array = np.random.randint(self.states, size=self.size)
 		else:
-			self.states = int(math.log(len(array_or_states), NEIGH_KERNEL.size))
+			self.states = int(len(array_or_states) ** (1.0/NEIGH_KERNEL.size))
 			self.size = self.states**NEIGH_KERNEL.size
 			self.array = np.array(array_or_states)
 		# end if
