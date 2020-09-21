@@ -7,7 +7,7 @@ from rule import Rule
 
 from multiprocessing import Pool
 
-rule = Rule.load("spiral")
+rule = Rule.load("sierpinski")
 world = World(100, rule)
 
 plot = Plot()
