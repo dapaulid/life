@@ -1,5 +1,19 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#-------------------------------------------------------------------------------
+"""
+    @license
+    Copyright (c) Daniel Pauli <dapaulid@gmail.com>
 
+    This source code is licensed under the MIT license found in the
+    LICENSE file in the root directory of this source tree.
+"""
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# imports
+#-------------------------------------------------------------------------------
+#
 import numpy as np
 from world import World
 from plot import Plot
@@ -7,22 +21,15 @@ from rule import Rule
 
 from multiprocessing import Pool
 
+#-------------------------------------------------------------------------------
+# main
+#-------------------------------------------------------------------------------
+#
 rule = Rule.load("sierpinski")
-world = World(100, rule)
+world = World(rule)
 
 plot = Plot()
 plot.show(world)
 
-"""
-def f(x):
-    rules = np.random.randint(2, size=512)
-    world = World(100, rules)
-    world.advance(1000)
-    return world.time
-
-# with Pool(2) as p: # TODO requires python3?
-p = Pool()
-print(p.map(f, [1] * 10))
-p.terminate()
-# end with
-"""
+#-------------------------------------------------------------------------------
+# end of file
