@@ -13,7 +13,7 @@
 # imports
 #-------------------------------------------------------------------------------
 #
-import numpy as np
+import np
 from statistic import TimingStat
 
 #-------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ class World:
         # apply the rule
         self.cells, idx = self.rule.apply(self.cells)
         # statistics: increment counter for those rules applied
-        self.rule_count += np.bincount(idx.flatten(), 
+        self.rule_count += np.bincount(idx.ravel(), 
             minlength=self.rule_count.size)
         self.tick_stat.stop()
         self.time += 1

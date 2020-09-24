@@ -15,6 +15,7 @@
 #
 import matplotlib.pyplot as plt 
 import matplotlib.animation as animation
+import np
 
 import sys
 
@@ -36,7 +37,7 @@ class Plot:
     #---------------------------------------------------------------------------
     ## called by FuncAnimation to update the plots
     def update(self, data):
-        self.mat.set_data(data)
+        self.mat.set_data(np.asnumpy(data))
         # return all actors that needs to be redrawn
         return self.mat
     # end function 
@@ -56,7 +57,7 @@ class Plot:
         self.world = world
         fig, ax = plt.subplots()#(2, 1, gridspec_kw={'height_ratios': [4, 2]})
         fig.canvas.set_window_title('Live')
-        self.mat = ax.matshow(self.world.cells)
+        self.mat = ax.matshow(np.asnumpy(self.world.cells))
         self.ani = animation.FuncAnimation(fig, self.update, self.data_gen, 
             interval=10, blit=False)
         # do not block in interactive mode (python -i)
