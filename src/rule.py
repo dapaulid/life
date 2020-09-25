@@ -41,16 +41,10 @@ class Rule:
 
 	#---------------------------------------------------------------------------
     ## constructor
-	def __init__(self, array_or_states):
-		if np.isscalar(array_or_states):
-			self.states = array_or_states
-			self.size = Rule.get_array_size(self.states)
-			self.array = np.random.randint(self.states, size=self.size)
-		else:
-			self.states = int(len(array_or_states) ** (1.0/NEIGH_KERNEL.size))
-			self.size = Rule.get_array_size(self.states)
-			self.array = np.array(array_or_states)
-		# end if
+	def __init__(self, array):
+		self.states = int(len(array) ** (1.0/NEIGH_KERNEL.size))
+		self.size = Rule.get_array_size(self.states)
+		self.array = np.array(array)
 		self.kernel = np.power(self.states, NEIGH_KERNEL)
 	# end function
 
