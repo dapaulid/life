@@ -34,16 +34,21 @@ NEIGH_KERNEL = np.array(
 #
 class Rule:
 
+	@staticmethod
+	def get_array_size(states):
+		return states ** NEIGH_KERNEL.size
+	# end function
+
 	#---------------------------------------------------------------------------
     ## constructor
 	def __init__(self, array_or_states):
 		if np.isscalar(array_or_states):
 			self.states = array_or_states
-			self.size = self.states**NEIGH_KERNEL.size
+			self.size = Rule.get_array_size(self.states)
 			self.array = np.random.randint(self.states, size=self.size)
 		else:
 			self.states = int(len(array_or_states) ** (1.0/NEIGH_KERNEL.size))
-			self.size = self.states**NEIGH_KERNEL.size
+			self.size = Rule.get_array_size(self.states)
 			self.array = np.array(array_or_states)
 		# end if
 		self.kernel = np.power(self.states, NEIGH_KERNEL)
@@ -58,6 +63,15 @@ class Rule:
 		# determine next state by applying the rules
 		new_cells = self.array[idx] # same as self.arr.take(idx), but seems faster
 		return new_cells, idx
+	# end function
+
+	def get_count(self):
+		return np.bincount(self.array, minlength=self.states) / self.size	
+	# end function
+
+	def __str__(self):
+		# TODO output base64 representation?
+		return "(" + ", ".join(["%.3f" % x for x in self.get_count()]) + ")"
 	# end function
 
     #---------------------------------------------------------------------------

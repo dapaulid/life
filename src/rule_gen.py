@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 """
@@ -14,25 +13,33 @@
 # imports
 #-------------------------------------------------------------------------------
 #
-from world import World
-from plot import Plot
+import np
 from rule import Rule
-from rule_gen import RuleGenerator
-
-from multiprocessing import Pool
 
 #-------------------------------------------------------------------------------
-# main
+# class definition
 #-------------------------------------------------------------------------------
 #
+class RuleGenerator:
 
-geni = RuleGenerator(2)
-rule = geni.random()
-#rule = Rule.load("sierpinski")
-world = World(rule)
+	#---------------------------------------------------------------------------
+    ## constructor
+	def __init__(self, states, seed=None):
+		self.states = states
+		self.rng = np.random.default_rng(seed)
+	# end function
 
-plot = Plot()
-plot.show(world)
+
+    #---------------------------------------------------------------------------
+    ## returns a new rule with non-uniform distributed transitions
+	def random(self):
+		n = Rule.get_array_size(self.states)
+		dist = self.rng.random(self.states)
+		dist /= sum(dist)
+		return Rule(self.rng.choice(self.states, n, p=dist))
+	# end function
+
+# end class
 
 #-------------------------------------------------------------------------------
 # end of file
