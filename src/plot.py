@@ -57,9 +57,9 @@ class Plot:
         self.world = world
         fig, ax = plt.subplots()#(2, 1, gridspec_kw={'height_ratios': [4, 2]})
         fig.canvas.set_window_title('Live')
-        self.mat = ax.matshow(np.asnumpy(self.world.cells))
+        self.mat = ax.imshow(np.asnumpy(self.world.cells))
         self.ani = animation.FuncAnimation(fig, self.update, self.data_gen, 
-            interval=10, blit=False)
+            interval=100, blit=False)
         # do not block in interactive mode (python -i)
         plt.show(block=not sys.flags.interactive)
     # end function

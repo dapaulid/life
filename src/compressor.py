@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 """
@@ -14,32 +13,31 @@
 # imports
 #-------------------------------------------------------------------------------
 #
-from world import World
-from plot import Plot
-from rule import Rule
-from rule_gen import RuleGenerator
-from compressor import Compressor
-
-from multiprocessing import Pool
+import zlib
 
 #-------------------------------------------------------------------------------
-# main
+# class definition
 #-------------------------------------------------------------------------------
 #
+class Compressor:
 
-geni = RuleGenerator(2)
-rule = geni.random()
-# avoid "flicker-worlds"
-rule.array[0] = 0
-rule.save("last_random")
+	#---------------------------------------------------------------------------
+    ## constructor
+	def __init__(self, world):
+		self.world = world
+		self.co = zlib.compressobj()
+		self.value = None
+	# end function
 
-rule = Rule.load("breaking_lines")
-world = World(rule, 100)
+    #---------------------------------------------------------------------------
+    ## returns a new rule with non-uniform distributed transitions
+	def update(self):
+		world_str = ("".join(map(str, self.world.cells.ravel()))).encode('utf-8')
+		assert len(world_str) == self.world.size
+		self.value = (len(self.co.compress(world_str)) + len(self.co.flush(zlib.Z_FULL_FLUSH))) / len(world_str)
+	# end function
 
-#world.advance(12600)
-
-plot = Plot()
-plot.show(world)
+# end class
 
 #-------------------------------------------------------------------------------
 # end of file
