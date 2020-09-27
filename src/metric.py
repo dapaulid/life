@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 """
@@ -14,40 +13,32 @@
 # imports
 #-------------------------------------------------------------------------------
 #
-from world import World
-from plot import Plot
-from rule import Rule
-from rule_gen import RuleGenerator
-from compressor import Compressor
-
-# metrics we want to apply to our world
-from metrics.cyclic import Cyclic
-from metrics.exploration import Exploration
-from metrics.compressibility import Compressibility
-
 #-------------------------------------------------------------------------------
-# main
+# class definition
 #-------------------------------------------------------------------------------
 #
+class Metric:
 
-# create some random rule
-geni = RuleGenerator(2)
-rule = geni.random()
-# avoid "flicker-worlds"
-rule.array[0] = 0
-rule.save("last_random")
+	#---------------------------------------------------------------------------
+    ## constructor
+    def __init__(self, world):
+        self.world = world
+        # initialize attributes with default values
+        self.name = type(self).__name__
+        self.value = None
+        self.format = "%s"
+	# end function
 
-#rule = Rule.load("breaking_lines")
+    def update(self):
+        # subclasses can do something with self.world here
+        pass
+    # end function
 
-# create a world governed by this rule
-world = World(rule, 
-    radius=100, 
-    metrics=[Exploration, Compressibility, Cyclic]
-)
+    def __str__(self):
+        return self.name + ": " + self.format % self.value
+    # end function
 
-# display the world over time
-plot = Plot()
-plot.show(world)
+# end class
 
 #-------------------------------------------------------------------------------
 # end of file

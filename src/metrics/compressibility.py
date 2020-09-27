@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 """
@@ -14,40 +13,34 @@
 # imports
 #-------------------------------------------------------------------------------
 #
-from world import World
-from plot import Plot
-from rule import Rule
-from rule_gen import RuleGenerator
-from compressor import Compressor
-
-# metrics we want to apply to our world
-from metrics.cyclic import Cyclic
-from metrics.exploration import Exploration
-from metrics.compressibility import Compressibility
+from metric import Metric
+import zlib
 
 #-------------------------------------------------------------------------------
-# main
+# class definition
 #-------------------------------------------------------------------------------
 #
+class Compressibility(Metric):
 
-# create some random rule
-geni = RuleGenerator(2)
-rule = geni.random()
-# avoid "flicker-worlds"
-rule.array[0] = 0
-rule.save("last_random")
+	#---------------------------------------------------------------------------
+    ## constructor
+    def __init__(self, world):
+        # call base
+        Metric.__init__(self, world)
+        self.name = "compressibility"
+        self.value = 0.0
+        self.format = "%.2f%%"
+        self.co = zlib.compressobj()
+	# end function
 
-#rule = Rule.load("breaking_lines")
+    def update(self):
+        world_str = ("".join(map(str, self.world.cells.ravel()))).encode('utf-8')
+        assert len(world_str) == self.world.size
+        compressed_size = len(self.co.compress(world_str)) + len(self.co.flush(zlib.Z_FULL_FLUSH))
+        self.value = (1.0 - compressed_size / len(world_str)) * 100
+    # end function
 
-# create a world governed by this rule
-world = World(rule, 
-    radius=100, 
-    metrics=[Exploration, Compressibility, Cyclic]
-)
-
-# display the world over time
-plot = Plot()
-plot.show(world)
+# end class
 
 #-------------------------------------------------------------------------------
 # end of file
