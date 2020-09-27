@@ -19,6 +19,7 @@ from plot import Plot
 from rule import Rule
 from rule_gen import RuleGenerator
 from compressor import Compressor
+import sys
 
 # metrics we want to apply to our world
 from metrics.cyclic import Cyclic
@@ -33,18 +34,31 @@ from metrics.population import Population
 
 # create some random rule
 geni = RuleGenerator(2)
-rule = geni.random()
-# avoid "flicker-worlds"
-rule.array[0] = 0
-rule.save("last_random")
+"""
+while True:
+    rule = geni.random()
+    # avoid "flicker-worlds"
+    rule.array[0] = 0
 
-#rule = Rule.load("hourglass")
+    world = World(rule, radius=50, metrics=[Exploration])
+    world.advance(200)
+    sys.stdout.write(".")
+    sys.stdout.flush()
+    pop = world.get_population()
+    if pop[0] > 0.01 and pop[0] < 0.1 and world.metrics[0].value > 10:
+        break
+# end while
+rule.save("last_random")
+"""
+rule = Rule.load("life")
 
 # create a world governed by this rule
 world = World(rule, 
-    radius=50, 
+    radius=100, 
     metrics=[Exploration, Compressibility, Population, Cyclic]
 )
+
+#world.advance(200000)
 
 # display the world over time
 plot = Plot()

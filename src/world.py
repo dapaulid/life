@@ -70,16 +70,22 @@ class World:
 
     #---------------------------------------------------------------------------
     ## advances the world over multiple states.
-    def advance(self, ticks):
+    def advance(self, ticks=1, silent=False):
         # execute specified number of ticks
         while ticks > 0:
             self.tick()
             ticks -= 1
+            # periodically update status
+            if self.time % 1000 == 0 or ticks == 0:
+                # calculate metrics
+                for m in self.metrics:
+                    m.update()
+                # output status
+                if not silent:
+                    print(self)
+                # end if
+            # end if
         # end if
-        # calculate metrics
-        for m in self.metrics:
-            m.update()
-        # end for
     # end function
 
     # get hash of the current cell configuration
@@ -94,6 +100,10 @@ class World:
     ## returns the current number of cells of each state
     def get_population(self):
         return np.unique(self.cells, return_counts=True)[1] / self.cells.size
+    # end function
+
+    def __str__(self):
+        return ("[tick %d] " % self.time) + ", ".join(map(str, self.metrics))
     # end function
 
 # end class

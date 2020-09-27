@@ -57,7 +57,7 @@ class Plot:
     ## called by FuncAnimation to generate more frames to plot
     def data_gen(self):
         while True:
-            yield self.world.advance(1)
+            yield self.world.advance(1, True)
         # end while
     # end function
 
