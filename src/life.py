@@ -26,6 +26,7 @@ from metrics.cyclic import Cyclic
 from metrics.exploration import Exploration
 from metrics.compressibility import Compressibility
 from metrics.population import Population
+from metrics.patterns import Patterns
 
 #-------------------------------------------------------------------------------
 # main
@@ -54,8 +55,8 @@ rule = Rule.load("life")
 
 # create a world governed by this rule
 world = World(rule, 
-    radius=100, 
-    metrics=[Exploration, Compressibility, Population, Cyclic]
+    radius=50, 
+    metrics=[Exploration, Compressibility, Population, Patterns, Cyclic]
 )
 
 #world.advance(200000)

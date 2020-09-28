@@ -27,7 +27,7 @@ if '--cuda' in sys.argv:
 else:
     # use numpy/scipy    
     from numpy import *
-    from scipy.ndimage import convolve
+    from scipy.ndimage import convolve, label
     # dummy cupy.asnumpy replacement
     def asnumpy(a, stream=None): return a
 # end if
