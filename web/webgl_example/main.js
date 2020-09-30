@@ -34,6 +34,9 @@ async function initGL() {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
 
+    // TODO for zooming and moving see
+    // https://jsfiddle.net/greggman/mdpxw3n6/
+
     canvas.onmousemove = onMouseMove;
     canvas.ontouchmove = onTouchMove;
 
