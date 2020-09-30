@@ -150,9 +150,9 @@ async function createShaderFromScriptAsync(gl, scriptUrl, shaderType) {
  * @return {!WebGLProgram} A program
  */
 async function createProgramFromScriptsAsync(gl, vertexShaderUrl, fragmentShaderUrl) {
-  const vertexShader = await createShaderFromScriptAsync(gl, 
+  const vertexShader = createShaderFromScriptAsync(gl, 
     vertexShaderUrl, gl.VERTEX_SHADER);
-  const fragmentShader = await createShaderFromScriptAsync(gl, 
+  const fragmentShader = createShaderFromScriptAsync(gl, 
     fragmentShaderUrl, gl.FRAGMENT_SHADER);
-  return createProgram(gl, vertexShader, fragmentShader);
+  return createProgram(gl, await vertexShader, await fragmentShader);
 }
