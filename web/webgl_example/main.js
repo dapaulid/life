@@ -1,7 +1,7 @@
 /**
  * Created by ghassaei on 2/20/16.
  */
-
+async function main() {
 
 var gl;
 var canvas;
@@ -23,7 +23,7 @@ var paused = false;//while window is resizing
 
 window.onload = initGL;
 
-function initGL() {
+async function initGL() {
 
     // Get A WebGL context
     canvas = document.getElementById("glcanvas");
@@ -53,7 +53,7 @@ function initGL() {
     gl.disable(gl.DEPTH_TEST);
 
     // setup a GLSL program
-    var program = createProgramFromScripts(gl, "2d-vertex-shader", "2d-fragment-shader");
+    var program = await createProgramFromScriptsAsync(gl, "2d-vertex-shader.glsl", "2d-fragment-shader.glsl");
     gl.useProgram(program);
 
     // look up where the vertex data needs to go.
@@ -226,3 +226,6 @@ function onTouchMove(e){
     var touch = e.touches[0];
     gl.uniform2f(mouseCoordLocation, touch.pageX/width, touch.pageY/height);
 }
+
+}
+main();

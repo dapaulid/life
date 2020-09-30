@@ -107,3 +107,52 @@ function createProgramFromScripts(
   var fragmentShader = createShaderFromScript(gl, fragmentShaderId);
   return createProgram(gl, vertexShader, fragmentShader);
 }
+
+function loadShaderScript(url) {
+  // NOTE: when loading from file:// start chrome with 
+  // --allow-file-access-from-files to avoid CORS error
+  return new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      request.onreadystatechange = function () {
+          // NOTE: request.status seems to be 0 in case of file://
+          if (request.readyState === 4) {
+              if (request.responseText) {
+                  resolve(request.responseText);
+              } else {
+                  reject("got empty response for " + url);
+              }
+          }
+      };
+      request.open("GET", url, true);
+      request.send();
+  });
+}
+
+/**
+ * Creates a shader from the content of an asynchronosly loaded script.
+ *
+ * @param {!WebGLRenderingContext} gl The WebGL Context.
+ * @param {string} scriptUrl The id of the script tag.
+ * @param {string} shaderType. The type of shader to create.
+ * @return {!WebGLShader} A shader.
+ */
+async function createShaderFromScriptAsync(gl, scriptUrl, shaderType) {
+  const shaderSource = await loadShaderScript(scriptUrl);
+  return compileShader(gl, shaderSource, shaderType);
+}
+
+/**
+ * Creates a program from 2 script urls.
+ *
+ * @param {!WebGLRenderingContext} gl The WebGL Context.
+ * @param {string} vertexShaderUrl The URL of the vertex shader.
+ * @param {string} fragmentShaderUrl The URL of the fragment shader.
+ * @return {!WebGLProgram} A program
+ */
+async function createProgramFromScriptsAsync(gl, vertexShaderUrl, fragmentShaderUrl) {
+  const vertexShader = await createShaderFromScriptAsync(gl, 
+    vertexShaderUrl, gl.VERTEX_SHADER);
+  const fragmentShader = await createShaderFromScriptAsync(gl, 
+    fragmentShaderUrl, gl.FRAGMENT_SHADER);
+  return createProgram(gl, vertexShader, fragmentShader);
+}
