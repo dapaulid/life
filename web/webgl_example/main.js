@@ -21,7 +21,11 @@ var mouseCoordLocation;
 
 var paused = false;//while window is resizing
 
-window.onload = initGL;
+window.onload = function() {
+    initGL().catch(err => {
+        console.error("[initGL]", err)
+    })
+};
 
 async function initGL() {
 
@@ -228,4 +232,6 @@ function onTouchMove(e){
 }
 
 }
-main();
+main().catch(err => {
+    console.log("AAA", err)
+});
