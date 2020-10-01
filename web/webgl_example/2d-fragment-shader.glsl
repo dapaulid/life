@@ -1,4 +1,5 @@
-var fragmentShader = `
+shaders["2d-fragment"] = `// GLSL fragment shader code
+
 precision mediump float;
 
 uniform sampler2D u_image;//texture array
@@ -54,4 +55,5 @@ void main() {
 		}
 	}
 }
-`;
+
+`; // end GLSL shader code

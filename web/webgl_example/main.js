@@ -54,7 +54,8 @@ function initGL() {
     gl.disable(gl.DEPTH_TEST);
 
     // setup a GLSL program
-    var program = twgl.createProgramFromSources(gl, [vertexShader, fragmentShader]);
+    var program = twgl.createProgramFromSources(gl, 
+        [shaders["2d-vertex"], shaders["2d-fragment"]]);
     gl.useProgram(program);
 
     // look up where the vertex data needs to go.
