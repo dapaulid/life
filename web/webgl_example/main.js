@@ -1,8 +1,6 @@
 /**
  * Created by ghassaei on 2/20/16.
  */
-async function main() {
-
 var gl;
 var canvas;
 var lastState;
@@ -21,13 +19,9 @@ var mouseCoordLocation;
 
 var paused = false;//while window is resizing
 
-window.onload = function() {
-    initGL().catch(err => {
-        console.error("[initGL]", err)
-    })
-};
+window.onload = initGL;
 
-async function initGL() {
+function initGL() {
 
     // Get A WebGL context
     canvas = document.getElementById("glcanvas");
@@ -233,8 +227,3 @@ function onTouchMove(e){
     var touch = e.touches[0];
     gl.uniform2f(mouseCoordLocation, touch.pageX/width, touch.pageY/height);
 }
-
-}
-main().catch(err => {
-    console.log("AAA", err)
-});
