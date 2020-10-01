@@ -1,3 +1,4 @@
+var fragmentShader = `
 precision mediump float;
 
 uniform sampler2D u_image;//texture array
@@ -53,3 +54,4 @@ void main() {
 		}
 	}
 }
+`;

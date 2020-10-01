@@ -60,7 +60,7 @@ async function initGL() {
     gl.disable(gl.DEPTH_TEST);
 
     // setup a GLSL program
-    var program = await createProgramFromScriptsAsync(gl, "2d-vertex-shader.glsl", "2d-fragment-shader.glsl");
+    var program = twgl.createProgramFromSources(gl, [vertexShader, fragmentShader]);
     gl.useProgram(program);
 
     // look up where the vertex data needs to go.
