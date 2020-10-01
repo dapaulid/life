@@ -55,7 +55,10 @@ function initGL() {
 
     // setup a GLSL program
     var program = twgl.createProgramFromSources(gl, 
-        [shaders["2d-vertex"], shaders["2d-fragment"]]);
+        [shaders["2d-vertex"], shaders["2d-fragment"]],
+        null, null,
+        err => { throw "TWGL error:\n" + err }
+    );
     gl.useProgram(program);
 
     // look up where the vertex data needs to go.
