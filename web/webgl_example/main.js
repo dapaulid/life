@@ -1,3 +1,4 @@
+'use strict';
 /**
  * Created by ghassaei on 2/20/16.
  */
@@ -17,7 +18,11 @@ var flipYLocation;
 var textureSizeLocation;
 var mouseCoordLocation;
 
+var programInfo
+
 var paused = false;//while window is resizing
+
+let viewProjectionMat;
 
 window.onload = initGL;
 
@@ -31,12 +36,12 @@ function initGL() {
     // TODO for zooming and moving see
     // https://jsfiddle.net/greggman/mdpxw3n6/
 
-    canvas.onmousemove = onMouseMove;
-    canvas.ontouchmove = onTouchMove;
+    //canvas.onmousemove = onMouseMove;
+    //canvas.ontouchmove = onTouchMove;
 
     window.onresize = onResize;
 
-    gl = canvas.getContext("webgl", { antialias: false}) || canvas.getContext("experimental-webgl", { antialias: false});
+    gl = twgl.getWebGLContext(canvas, { antialias: false });
     if (!gl) {
         alert('Could not initialize WebGL, try another browser');
         return;
@@ -54,11 +59,13 @@ function initGL() {
     gl.disable(gl.DEPTH_TEST);
 
     // setup a GLSL program
-    var program = twgl.createProgramFromSources(gl, 
+    programInfo = twgl.createProgramInfo(gl, 
         [shaders["2d-vertex"], shaders["2d-fragment"]],
         null, null,
         err => { throw "TWGL error:\n" + err }
     );
+    var program = programInfo.program;
+    
     gl.useProgram(program);
 
     // look up where the vertex data needs to go.
@@ -102,6 +109,7 @@ function initGL() {
     gl.enableVertexAttribArray(texCoordLocation);
     gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
+    initControls();
 
     onResize();
 
@@ -162,21 +170,52 @@ function render(){
             currentState = resizedCurrentState;
             resizedCurrentState = null;
         }
+        let mat = m3.identity();
+        //mat = m3.translate(mat, x, y);
+        //mat = m3.rotate(mat, rotation);
+        //mat = m3.scale(mat, scale, scale);
+        
+        //updateViewProjection();
 
+        //mat = m3.multiply(viewProjectionMat, mat);
+        //mat = m3.translate(mat, 0.01, 0.01);
+        //mat = m3.scale(mat, x, x);
+
+        const zoomScale = 1 / camera.zoom;
+        mat = m3.scale(mat, zoomScale, zoomScale);
+        mat = m3.translate(mat, camera.x, camera.y);
+        //console.log(camera.x, camera.y)
+
+        updateViewProjection();
+        //console.log(viewProjectionMat);
+        mat = viewProjectionMat;
+
+        // calls gl.uniformXXX
+
+        
         // don't y flip images while drawing to the textures
         gl.uniform1f(flipYLocation, 1);
+        twgl.setUniforms(programInfo, {
+            u_matrix: m3.identity(),
+          });
 
         step();
 
 
         gl.uniform1f(flipYLocation, -1);  // need to y flip for canvas
+        twgl.setUniforms(programInfo, {
+            u_matrix: mat,
+        });        
         gl.bindTexture(gl.TEXTURE_2D, lastState);
+
 
 
         //draw to canvas
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.bindTexture(gl.TEXTURE_2D, lastState);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+
     }
 
 
@@ -231,3 +270,138 @@ function onTouchMove(e){
     var touch = e.touches[0];
     gl.uniform2f(mouseCoordLocation, touch.pageX/width, touch.pageY/height);
 }
+
+////////////////////////// CONTROL STUFF //////////////////////////
+
+const camera = {
+    x: 0,
+    y: 0,
+    rotation: 0,
+    zoom: 1,
+  };
+
+function makeCameraMatrix() {
+    const zoomScale = 1 / camera.zoom;
+    let cameraMat = m3.identity();
+    cameraMat = m3.translate(cameraMat, camera.x, camera.y);
+    cameraMat = m3.rotate(cameraMat, camera.rotation);
+    cameraMat = m3.scale(cameraMat, zoomScale, zoomScale);
+    return cameraMat;
+  }
+  
+  function updateViewProjection() {
+    // same as ortho(0, width, height, 0, -1, 1)
+    const projectionMat = m3.identity();//m3.projection(gl.canvas.width, gl.canvas.height);
+    const cameraMat = makeCameraMatrix();
+    let viewMat = m3.inverse(cameraMat);
+    viewProjectionMat = m3.multiply(projectionMat, viewMat);
+  }
+
+function initControls() {
+
+updateViewProjection();
+
+
+
+function getClipSpaceMousePosition(e) {
+    // get canvas relative css position
+    const rect = canvas.getBoundingClientRect();
+    const cssX = e.clientX - rect.left;
+    const cssY = e.clientY - rect.top;
+    
+    // get normalized 0 to 1 position across and down canvas
+    const normalizedX = cssX / canvas.clientWidth;
+    const normalizedY = cssY / canvas.clientHeight;
+  
+    // convert to clip space
+    const clipX = normalizedX *  2 - 1;
+    const clipY = normalizedY * -2 + 1;
+    
+    return [clipX, clipY];
+  }
+  
+  let startInvViewProjMat;
+  let startCamera;
+  let startPos;
+  let startClipPos;
+  let startMousePos;
+  let rotate;
+  
+  function moveCamera(e) {
+    /*const pos = m3.transformPoint(
+              startInvViewProjMat,
+        getClipSpaceMousePosition(e));*/ // TODO something else?
+    const pos =   getClipSpaceMousePosition(e)
+      
+    camera.x = startCamera.x + startPos[0] - pos[0];
+    camera.y = startCamera.y + startPos[1] - pos[1];
+    console.log(startPos)
+    draw();
+  }
+
+  function handleMouseMove(e) {
+    if (rotate) {
+          rotateCamera(e);
+    } else {
+      moveCamera(e);
+    }
+  }
+  
+  function handleMouseUp(e) {
+    rotate = false;
+    draw();
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+  }
+  
+  canvas.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+  
+    rotate = e.shiftKey;
+    startInvViewProjMat = m3.inverse(viewProjectionMat);
+    startCamera = Object.assign({}, camera);
+    startClipPos = getClipSpaceMousePosition(e);
+    startPos = startClipPos /*m3.transformPoint(
+              startInvViewProjMat,
+        startClipPos);*/ // TODO something else?
+    console.log(startPos)
+    startMousePos = [e.clientX, e.clientY];
+    draw();
+  })
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();  
+    const [clipX, clipY] = getClipSpaceMousePosition(e);
+    
+    // position before zooming
+    const [preZoomX, preZoomY] = m3.transformPoint(
+        m3.inverse(viewProjectionMat), 
+        [clipX, clipY]);
+      
+    // multiply the wheel movement by the current zoom level
+    // so we zoom less when zoomed in and more when zoomed out
+    const newZoom = camera.zoom * Math.pow(2, e.deltaY * -0.01);
+    camera.zoom = Math.max(0.02, Math.min(100, newZoom));
+    
+    updateViewProjection();
+    
+    // position after zooming
+    const [postZoomX, postZoomY] = m3.transformPoint(
+        m3.inverse(viewProjectionMat), 
+        [clipX, clipY]);
+  
+    // camera needs to be moved the difference of before and after
+    camera.x += preZoomX - postZoomX;
+    camera.y += preZoomY - postZoomY;  
+    
+    draw();
+  });  
+
+  function draw() {
+    updateViewProjection();
+    //render();
+  }
+
+} // initControls
