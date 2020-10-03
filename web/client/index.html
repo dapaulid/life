@@ -1,19 +1,25 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="index.css">
-  <title>Life</title>
+    <meta charset="UTF-8">
+    <title>Conway Shader</title>
+
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script type="text/javascript" src="lib/twgl.js"></script>
+    <script type="text/javascript" src="lib/m3.js"></script>
+    <script type="text/javascript" src="lib/viewport-ctrl.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+    <!-- load shaders into global object -->
+    <script type="text/javascript">const shaders = {}</script>
+    <script type="text/javascript" src="2d-vertex-shader.glsl"></script>
+    <script type="text/javascript" src="2d-fragment-shader.glsl"></script>
 </head>
-
 <body>
-  
-  <canvas id="canvas" width="900" height="900">your canvas loads here</canvas>
-  <script src="index.js" type="text/javascript"></script>
+
+<canvas id="glcanvas"></canvas>
+
 </body>
-
 </html>
-
