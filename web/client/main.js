@@ -39,28 +39,11 @@ function initGL() {
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
 
-    // TODO for zooming and moving see
-    // https://jsfiddle.net/greggman/mdpxw3n6/
-
-    //canvas.onmousemove = onMouseMove;
-    //canvas.ontouchmove = onTouchMove;
-
-    window.onresize = onResize;
-
     gl = twgl.getWebGLContext(canvas, { antialias: false });
     if (!gl) {
         alert('Could not initialize WebGL, try another browser');
         return;
     }
-
-    //setpixelated(canvas.getContext('2d'));
-    //function setpixelated(context){
-    //    context['imageSmoothingEnabled'] = false;       /* standard */
-    //    context['mozImageSmoothingEnabled'] = false;    /* Firefox */
-    //    context['oImageSmoothingEnabled'] = false;      /* Opera */
-    //    context['webkitImageSmoothingEnabled'] = false; /* Safari */
-    //    context['msImageSmoothingEnabled'] = false;     /* IE */
-    //}
 
     gl.disable(gl.DEPTH_TEST);
 
@@ -238,12 +221,3 @@ function onResize(){
     paused = false;
 }
 
-function onMouseMove(e){
-    gl.uniform2f(mouseCoordLocation, e.clientX/width, e.clientY/height);
-}
-
-function onTouchMove(e){
-    e.preventDefault();
-    var touch = e.touches[0];
-    gl.uniform2f(mouseCoordLocation, touch.pageX/width, touch.pageY/height);
-}

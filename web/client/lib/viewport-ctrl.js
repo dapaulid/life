@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * This code is based on https://jsfiddle.net/greggman/mdpxw3n6/
+ */
+
 class ViewportControl {
 
 	constructor(canvas, onchange) {
