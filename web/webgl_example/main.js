@@ -328,14 +328,13 @@ function getClipSpaceMousePosition(e) {
   let rotate;
   
   function moveCamera(e) {
-    /*const pos = m3.transformPoint(
+    const pos = m3.transformPoint(
               startInvViewProjMat,
-        getClipSpaceMousePosition(e));*/ // TODO something else?
-    const pos =   getClipSpaceMousePosition(e)
+        getClipSpaceMousePosition(e)); // TODO something else?
+    //const pos =   getClipSpaceMousePosition(e)
       
     camera.x = startCamera.x + startPos[0] - pos[0];
     camera.y = startCamera.y + startPos[1] - pos[1];
-    console.log(startPos)
     draw();
   }
 
@@ -363,10 +362,10 @@ function getClipSpaceMousePosition(e) {
     startInvViewProjMat = m3.inverse(viewProjectionMat);
     startCamera = Object.assign({}, camera);
     startClipPos = getClipSpaceMousePosition(e);
-    startPos = startClipPos /*m3.transformPoint(
+    startPos = m3.transformPoint(
               startInvViewProjMat,
-        startClipPos);*/ // TODO something else?
-    console.log(startPos)
+        startClipPos); // TODO
+    //console.log(startPos)
     startMousePos = [e.clientX, e.clientY];
     draw();
   })
