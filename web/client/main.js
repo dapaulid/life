@@ -25,6 +25,11 @@ var paused = false;//while window is resizing
 //let viewProjectionMat;
 let viewPort;
 
+// our shaders will be loaded into this object in index.html
+const shaders = {}; 
+// template-string tag used in GLSL shaders
+const glsl = x => x.join('\n');
+
 window.onload = initGL;
 
 function initGL() {

@@ -1,4 +1,4 @@
-shaders["2d-vertex"] = `// GLSL vertex shader code
+shaders["2d-vertex"] = glsl` // vertex shader
 
 attribute vec2 a_position;
 uniform mat3 u_matrix;
@@ -14,4 +14,4 @@ void main() {
 	v_texCoord = a_texCoord;
 }
 
-`; // end GLSL shader code
+`; // end vertex shader

@@ -1,4 +1,4 @@
-shaders["2d-fragment"] = `// GLSL fragment shader code
+shaders["2d-fragment"] = glsl` // fragment shader
 
 precision mediump float;
 
@@ -56,4 +56,4 @@ void main() {
 	}
 }
 
-`; // end GLSL shader code
+`; // end fragment shader
