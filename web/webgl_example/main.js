@@ -171,30 +171,7 @@ function render(){
             currentState = resizedCurrentState;
             resizedCurrentState = null;
         }
-        let mat = m3.identity();
-        //mat = m3.translate(mat, x, y);
-        //mat = m3.rotate(mat, rotation);
-        //mat = m3.scale(mat, scale, scale);
-        
-        //updateViewProjection();
-
-        //mat = m3.multiply(viewProjectionMat, mat);
-        //mat = m3.translate(mat, 0.01, 0.01);
-        //mat = m3.scale(mat, x, x);
-
-        //const zoomScale = 1 / camera.zoom;
-        //mat = m3.scale(mat, zoomScale, zoomScale);
-        //mat = m3.translate(mat, camera.x, camera.y);
-        //console.log(camera.x, camera.y)
-
-        //updateViewProjection();
-        //console.log(viewProjectionMat);
-        mat = viewPort.matrix;
-        //console.log(mat)
-
-        // calls gl.uniformXXX
-
-        
+       
         // don't y flip images while drawing to the textures
         gl.uniform1f(flipYLocation, 1);
         twgl.setUniforms(programInfo, {
@@ -203,24 +180,17 @@ function render(){
 
         step();
 
-
         gl.uniform1f(flipYLocation, -1);  // need to y flip for canvas
         twgl.setUniforms(programInfo, {
-            u_matrix: mat,
+            u_matrix: viewPort.matrix,
         });        
         gl.bindTexture(gl.TEXTURE_2D, lastState);
-
-
 
         //draw to canvas
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.bindTexture(gl.TEXTURE_2D, lastState);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-
     }
-
-
 
     window.requestAnimationFrame(render);
 }
