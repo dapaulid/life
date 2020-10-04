@@ -47,34 +47,36 @@ class Rule {
 		return new Rule(array);
 	
 	}
-}
 
-// from https://jsfiddle.net/magikMaker/7bjaT/:
-/**
- * use this to make a Base64 encoded string URL friendly, 
- * i.e. '+' and '/' are replaced with '-' and '_' also any trailing '=' 
- * characters are removed
- *
- * @param {String} str the encoded string
- * @returns {String} the URL friendly encoded String
- */
-function base64EncodeUrl(str){
-    return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '');
-}
-
-/**
- * Use this to recreate a Base64 encoded string that was made URL friendly 
- * using Base64EncodeurlFriendly.
- * '-' and '_' are replaced with '+' and '/' and also it is padded with '+'
- *
- * @param {String} str the encoded string
- * @returns {String} the URL friendly encoded String
- */
-function base64DecodeUrl(str){
-    str = (str + '===').slice(0, str.length + (str.length % 4));
-    return str.replace(/-/g, '+').replace(/_/g, '/');
+	static random(states) {
+		const n = Math.pow(states, 9);
+		let array = []
+		for (let i = 0; i < n; i++) {
+			array[i] = Math.floor(Math.random() * states);
+		}
+		return new Rule(array);
+	}
 }
 
 function getRuleSize(states) {
     return Math.ceil(Math.pow(states, 9) * Math.log(states)/Math.log(256));
+}
+
+function base64EncodeUrl(str){
+    return replaceChars(str, {'+': '-', '/': '.', '=': '' });
+}
+
+function base64DecodeUrl(str){
+	// restore padding
+	str += "=".repeat(4 - str.length % 4);
+    return replaceChars(str, { '-': '+', '.': '/' });
+}
+
+function replaceChars(str, map) {
+	let replaced = ""
+	for (let i = 0; i < str.length; i++) {
+		const rpl = map[str[i]];
+		replaced += (rpl != null ? rpl : str[i]);
+	}
+	return replaced;
 }
