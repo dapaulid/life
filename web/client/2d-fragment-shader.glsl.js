@@ -8,12 +8,19 @@ varying vec2 v_texCoord;
 uniform vec2 u_textureSize;
 
 uniform vec2 u_mouseCoord;
+uniform bool u_tick;
 
 vec4 live = vec4(0.5,1.0,0.7,1.);
 vec4 dead = vec4(0.,0.,0.,1.);
 vec4 blue = vec4(0.,0.,1.,1.);
 
 void main() {
+
+	vec4 me = texture2D(u_image, v_texCoord);
+	if (!u_tick) {
+		gl_FragColor = me;
+		return;
+	}
 
 	vec2 onePixel = vec2(1.0, 1.0)/u_textureSize;
 
@@ -37,7 +44,6 @@ void main() {
 			sum += texture2D(u_image, neighborCoord).g;
 		}
 	}
-	vec4 me = texture2D(u_image, v_texCoord);
 
 	if (me.g <= 0.1) {
 		if ((sum >= 2.9) && (sum <= 3.1)) {
@@ -54,6 +60,7 @@ void main() {
 			gl_FragColor = blue;
 		}
 	}
+
 }
 
 `; // end fragment shader

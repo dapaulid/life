@@ -15,6 +15,7 @@ var width;
 var height;
 
 var flipYLocation;
+var tickLocation;
 var textureSizeLocation;
 var mouseCoordLocation;
 
@@ -87,6 +88,7 @@ function initGL() {
 
     //flip y
     flipYLocation = gl.getUniformLocation(program, "u_flipY");
+    tickLocation = gl.getUniformLocation(program, "u_tick");
 
     //set texture location
     var texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
@@ -172,6 +174,7 @@ function render(){
        
         // don't y flip images while drawing to the textures
         gl.uniform1f(flipYLocation, 1);
+        gl.uniform1f(tickLocation, true);
         twgl.setUniforms(programInfo, {
             u_matrix: m3.identity(),
           });
@@ -179,14 +182,15 @@ function render(){
         step();
 
         gl.uniform1f(flipYLocation, -1);  // need to y flip for canvas
+        gl.uniform1f(tickLocation, false);
         twgl.setUniforms(programInfo, {
             u_matrix: viewPort.matrix,
         });        
-        gl.bindTexture(gl.TEXTURE_2D, lastState);
+        //gl.bindTexture(gl.TEXTURE_2D, lastState);
 
         //draw to canvas
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.bindTexture(gl.TEXTURE_2D, lastState);
+        gl.bindTexture(gl.TEXTURE_2D, lastState);  // TODO correct?
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 
@@ -224,9 +228,23 @@ function onResize(){
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
     resizedLastState = makeTexture(gl);
-    //fill with random pixels
+
     var rgba = new Uint8Array(width*height*4);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, makeRandomArray(rgba));
+    for (var i=0;i<rgba.length/4;i++) {
+        var ii = i * 4;
+        rgba[ii] = 0
+        rgba[ii+1] = 0
+        rgba[ii+2] = 0
+        rgba[ii+3] = 255;
+    }    
+    const m = (Math.floor(rgba.length/4)/2)*4;
+    rgba[m] = alive[0] * 255;
+    rgba[m+1] = alive[1] * 255;
+    rgba[m+2] = alive[2] * 255;
+
+    //rgba = makeRandomArray(rgba);
+
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, rgba);
 
     paused = false;
 }
