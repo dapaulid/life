@@ -1,4 +1,21 @@
+
+/** 
+ * the base64 alphabet used for rule encoding. 
+ * it is chosen to be URL friendly and maintain 0 for zero bits. 
+ */
+const B64_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-";
+const B64_IDX = {}
+for (let i = 0; i < B64_CHARS.length; i++) {
+	B64_IDX[B64_CHARS[i]] = i;
+}
+
+// constants for BigInt operations
+const B64_MASK  = 0x3Fn
+const B64_SHIFT = 6n;
+
+
 class Rule {
+
 	constructor(array) {
 		this.array = array;
 		this.states = Math.pow(this.array.length, 1/9);
@@ -7,35 +24,29 @@ class Rule {
 	encode() {
 		const radix = BigInt(this.states);
 		let num = this.array.reduce((acc, x) => acc * radix + BigInt(x), BigInt(0));
-		const mask = BigInt(0xFF);
-		const shift = BigInt(8);
-		const num_bytes = getRuleSize(this.states);
-		let bytes = "";
-		for (let i = 0; i < num_bytes; i++) {
-			bytes += String.fromCharCode(Number(num & mask));
-			num >>= shift;
+		const len = getRuleSize(this.states);
+		let encoded = "";
+		for (let i = 0; i < len; i++) {
+			encoded += B64_CHARS[Number(num & B64_MASK)];
+			num >>= B64_SHIFT;
 		}
-		const base64 = btoa(bytes);
-		return base64EncodeUrl(base64);
+		return encoded;
 	}
 
 	static decode(str) {
-		const base64 = base64DecodeUrl(str);
-		const bytes = atob(base64);
-		const num_bytes = bytes.length;
-		const shift = BigInt(8);
-		let num = BigInt(0);
-		for (let i = num_bytes-1; i >= 0; i--) {
-			num <<= shift;
-			num += BigInt(bytes.charCodeAt(i));
-		}
 		// determine number of states
 		let states = null;
 		for (let i = 2; i < 256; i++) {
-			if (getRuleSize(i) == num_bytes) {
+			if (getRuleSize(i) == str.length) {
 				states = i;
 				break;
 			}
+		}
+		let num = BigInt(0);
+		for (let i = str.length-1; i >= 0; i--) {
+			num <<= B64_SHIFT;
+			const val = B64_IDX[str[i]];
+			num += BigInt(val);
 		}
 		const radix = BigInt(states);
 		const n = Math.pow(states, 9);
@@ -59,24 +70,5 @@ class Rule {
 }
 
 function getRuleSize(states) {
-    return Math.ceil(Math.pow(states, 9) * Math.log(states)/Math.log(256));
-}
-
-function base64EncodeUrl(str){
-    return replaceChars(str, {'+': '-', '/': '.', '=': '' });
-}
-
-function base64DecodeUrl(str){
-	// restore padding
-	str += "=".repeat(4 - str.length % 4);
-    return replaceChars(str, { '-': '+', '.': '/' });
-}
-
-function replaceChars(str, map) {
-	let replaced = ""
-	for (let i = 0; i < str.length; i++) {
-		const rpl = map[str[i]];
-		replaced += (rpl != null ? rpl : str[i]);
-	}
-	return replaced;
+    return Math.ceil(Math.pow(states, 9) * Math.log(states)/Math.log(64));
 }
