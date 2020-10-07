@@ -7,7 +7,6 @@ uniform sampler2D u_image;//texture array
 varying vec2 v_texCoord;
 uniform vec2 u_textureSize;
 
-uniform vec2 u_mouseCoord;
 uniform bool u_tick;
 
 vec4 live = vec4(0.5,1.0,0.7,1.);
@@ -23,16 +22,6 @@ void main() {
 	}
 
 	vec2 onePixel = vec2(1.0, 1.0)/u_textureSize;
-
-	vec2 pxDistFromMouse = (v_texCoord - u_mouseCoord)*(v_texCoord - u_mouseCoord)/onePixel;
-
-	float tol = 0.005;
-	if (pxDistFromMouse.x < tol && pxDistFromMouse.y < tol){
-		gl_FragColor = live;
-		return;
-	}
-
-
 
 	vec4 rawTextureData = texture2D(u_image, v_texCoord);
 

@@ -17,9 +17,9 @@ var height;
 var flipYLocation;
 var tickLocation;
 var textureSizeLocation;
-var mouseCoordLocation;
 
 var programInfo
+var bufferInfo
 
 var paused = false;//while window is resizing
 
@@ -65,50 +65,36 @@ function initGL() {
         err => { throw "TWGL error:\n" + err }
     );
     var program = programInfo.program;
-    
+
     gl.useProgram(program);
 
-    // look up where the vertex data needs to go.
-    var positionLocation = gl.getAttribLocation(program, "a_position");
 
-    // Create a buffer for positions
-    var bufferPos = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferPos);
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        -1.0, -1.0,
-        1.0, -1.0,
-        -1.0, 1.0,
-        -1.0, 1.0,
-        1.0, -1.0,
-        1.0, 1.0]), gl.STATIC_DRAW);
+    // vertex shader attributes
+    const arrays = {
+        a_position: { 
+            numComponents: 2, 
+            data: [
+                -1.0, -1.0,  1.0, -1.0, -1.0,  1.0,
+                -1.0,  1.0,  1.0, -1.0,  1.0,  1.0,
+            ]
+        },
+        a_texCoord: { 
+            numComponents: 2, 
+            data: [
+                 0.0,  0.0,  1.0,  0.0,  0.0,  1.0,
+                 0.0,  1.0,  1.0,  0.0,  1.0,  1.0
+            ]
+        }
+    };
+    bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+    twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
 
 
     //flip y
     flipYLocation = gl.getUniformLocation(program, "u_flipY");
     tickLocation = gl.getUniformLocation(program, "u_tick");
 
-    //set texture location
-    var texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
-
     textureSizeLocation = gl.getUniformLocation(program, "u_textureSize");
-
-    mouseCoordLocation = gl.getUniformLocation(program, "u_mouseCoord");
-
-    // provide texture coordinates for the rectangle.
-    var texCoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        0.0, 0.0,
-        1.0, 0.0,
-        0.0, 1.0,
-        0.0, 1.0,
-        1.0, 0.0,
-        1.0, 1.0]), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(texCoordLocation);
-    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
     viewPort = new ViewportControl(canvas, /*render*/)
 
@@ -191,7 +177,7 @@ function render(){
         //draw to canvas
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.bindTexture(gl.TEXTURE_2D, lastState);  // TODO correct?
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
     }
 
     window.requestAnimationFrame(render);
@@ -202,8 +188,7 @@ function step(){
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, currentState, 0);
 
     gl.bindTexture(gl.TEXTURE_2D, lastState);
-
-    gl.drawArrays(gl.TRIANGLES, 0, 6);//draw to framebuffer
+    twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
 
     var temp = lastState;
     lastState = currentState;
@@ -242,7 +227,7 @@ function onResize(){
     rgba[m+1] = alive[1] * 255;
     rgba[m+2] = alive[2] * 255;
 
-    //rgba = makeRandomArray(rgba);
+    rgba = makeRandomArray(rgba);
 
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, rgba);
 
