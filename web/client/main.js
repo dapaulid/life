@@ -19,8 +19,13 @@ var textureSizeLocation;
 var programInfo
 var bufferInfo
 
+let stepInterval;
+let framerateInterval;
+let framecount = 0;
+
 //let viewProjectionMat;
 let viewPort;
+let framerate;
 
 // our shaders will be loaded into this object in index.html
 const shaders = {}; 
@@ -43,8 +48,8 @@ function initGL() {
 
     // Get A WebGL context
     canvas = document.getElementById("glcanvas");
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    //canvas.width = canvas.clientWidth;
+    //canvas.height = canvas.clientHeight;
 
     gl = twgl.getWebGLContext(canvas, { antialias: false });
     if (!gl) {
@@ -99,6 +104,38 @@ function initGL() {
     frameBuffer = gl.createFramebuffer();
 
     render();
+
+    const speed = document.getElementById("speed");
+    speed.oninput = () => {
+        const q = (speed.value - speed.min) / (speed.max - speed.min)
+        /*
+        1000
+        500
+        250
+        125, 1
+        62.5, 2
+        31.25, 4
+        15, 8
+
+        */
+        const e = q * 3;
+        const interval = 10 ** e;
+        console.log(e, interval);
+        if (stepInterval) {
+            clearInterval(stepInterval);
+        }
+        stepInterval = setInterval(step, interval);
+    }
+    speed.oninput();
+
+    // update framerate every second
+    framerate = document.getElementById("framerate");
+    framerateInterval = setInterval(() => {
+        framerate.innerText = framecount + " FPS";
+        framecount = 0;
+    }, 1000);
+
+    //setInterval(step, 1000);
 }
 
 const alive = [0.5,1.0,0.7,1.0]
@@ -122,14 +159,7 @@ function makeRandomArray(rgba){
 
 function render(){
 
-    // don't y flip images while drawing to the textures
-    gl.uniform1f(flipYLocation, 1);
-    gl.uniform1f(tickLocation, true);
-    twgl.setUniforms(programInfo, {
-        u_matrix: m3.identity(),
-        });
-
-    step();
+    //step();
 
     gl.uniform1f(flipYLocation, -1);  // need to y flip for canvas
     gl.uniform1f(tickLocation, false);
@@ -142,29 +172,40 @@ function render(){
     gl.bindTexture(gl.TEXTURE_2D, currentState);
     twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
 
+    framecount++;
+
     window.requestAnimationFrame(render);
 }
 
-function step(){
+function step(ticks = 1) {
+
+    // don't y flip images while drawing to the textures
+    gl.uniform1f(flipYLocation, 1);
+    gl.uniform1f(tickLocation, true);
+    twgl.setUniforms(programInfo, {
+        u_matrix: m3.identity(),
+    });
+
     // lastState will receive output from fragment shader
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lastState, 0);
+    
+    for (let i = 0; i < ticks; i++) {
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lastState, 0);
+        gl.bindTexture(gl.TEXTURE_2D, currentState);
+        twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
 
-    gl.bindTexture(gl.TEXTURE_2D, currentState);
-    twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
+        // lastState is now our new currentState
+        [currentState, lastState] = [lastState, currentState];
+    }
 
-    // lastState is now our new currentState
-    var temp = lastState;
-    lastState = currentState;
-    currentState = temp;
 }
 
 function onResize(){
 
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-    width = 512;//canvas.clientWidth;
-    height = 512;//canvas.clientHeight;
+    canvas.width = 512;//canvas.clientWidth;
+    canvas.height = 512;//canvas.clientHeight;
+    width = canvas.clientWidth;
+    height = canvas.clientHeight;
 
     gl.viewport(0, 0, width, height);
 
