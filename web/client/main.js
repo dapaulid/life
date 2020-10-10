@@ -99,12 +99,12 @@ function initGL() {
 
     viewPort = new ViewportControl(canvas, changed)
 
-    onResize();
+    reset();
 
     frameBuffer = gl.createFramebuffer();
 
     gui.speed = document.getElementById("speed");
-    speed.oninput = () => {
+    gui.speed.oninput = () => {
         const q = (speed.value - speed.min) / (speed.max - speed.min)
         /*
         1000
@@ -124,7 +124,7 @@ function initGL() {
         }
         stepInterval = setInterval(step, interval);
     }
-    speed.oninput();
+    gui.speed.oninput();
 
     // update framerate every second
     gui.framerate = document.getElementById("framerate");
@@ -136,7 +136,23 @@ function initGL() {
     gui.resetZoom = document.getElementById("reset_zoom");
     gui.resetZoom.onclick = viewPort.reset.bind(viewPort);
 
-    render();
+    gui.pause = document.getElementById("pause");
+    gui.pause.onclick = () => {
+        pause();
+        gui.pause.className = paused ? "button icon-play" : "button icon-pause";
+        gui.tick.disabled = !paused;
+    };
+
+    gui.tick = document.getElementById("tick");
+    gui.tick.onclick = () => {
+        step(1);
+    };
+    gui.tick.disabled = true;
+
+    gui.reset = document.getElementById("reset");
+    gui.reset.onclick = reset;
+
+    //render();
     //setInterval(step, 1000);
 }
 
@@ -214,7 +230,18 @@ function step(ticks = 1) {
     changed();
 }
 
-function onResize(){
+let paused = false;
+function pause() {
+    if (paused) {
+        gui.speed.oninput();
+        paused = false;
+    } else {
+        clearInterval(stepInterval);
+        paused = true;
+    }
+}
+
+function reset() {
 
     canvas.width = 512;//canvas.clientWidth;
     canvas.height = 512;//canvas.clientHeight;
@@ -260,5 +287,6 @@ function onResize(){
         wrap: gl.REPEAT,
     });
 
+    changed();
 }
 

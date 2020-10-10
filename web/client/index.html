@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width">
 
     <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="stylesheet" type="text/css" href="fontello/css/fontello.css">
 
     <script type="text/javascript" src="lib/twgl.js"></script>
     <script type="text/javascript" src="lib/m3.js"></script>
@@ -19,9 +20,12 @@
 <body>
 
 <canvas id="glcanvas"></canvas>
-<div>
-    <input type="range" class="slider" id="speed" value="5" min="0" max="10">
-    <button type="button" class="button" id="reset_zoom">Reset</button>
+<div id="controls">
+    <button class="button icon-pause" id="pause" title="Pause/Resume"></button>
+    <button class="button icon-to-end" id="tick" title="Tick"></button>
+    <button class="button icon-resize-normal" id="reset_zoom" title="Reset View"></button>
+    <button class="button icon-ccw" id="reset" title="Reset"></button>    
+    <input type="range" class="slider" id="speed" title="Speed" value="5" min="0" max="10">
     <span id="framerate"></span>    
 </div>
 
