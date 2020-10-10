@@ -8,17 +8,12 @@ class ViewportControl {
 
 	constructor(canvas, onchange) {
 		this.canvas = canvas;
-		this.onchange = onchange || function () { };
-		this.camera = {
-			x: 0,
-			y: 0,
-			rotation: 0,
-			zoom: 1,
-		};
+		this.onchange = null; // set below
+		this.camera = null;
+
 		// the view projection matrix and its inverse
 		this.matrix = null;
 		this.invMatrix = null;
-		this.updateViewProjection();
 
 		// state variables used during user operations
 		this.startInvViewProjMat = null;
@@ -34,6 +29,22 @@ class ViewportControl {
 		window.addEventListener('mousemove', this.handleMouseMove.bind(this));
 		window.addEventListener('mouseup', this.handleMouseUp.bind(this));
 		this.canvas.addEventListener('wheel', this.handleMouseWheel.bind(this));
+
+		// go to initial state
+		this.reset();
+
+		// set callback last to not trigger a change during initial reset
+		this.onchange = onchange;
+	}
+
+	reset() {
+		this.camera = {
+			x: 0,
+			y: 0,
+			rotation: 0,
+			zoom: 1,
+		};
+		this.changed();	
 	}
 
 	updateViewProjection() {
@@ -144,6 +155,8 @@ class ViewportControl {
 
 	changed() {
 		this.updateViewProjection();
-		this.onchange();
+		if (this.onchange) {
+			this.onchange();
+		}
 	}
 }

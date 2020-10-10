@@ -25,7 +25,7 @@ let framecount = 0;
 
 //let viewProjectionMat;
 let viewPort;
-let framerate;
+const gui = {};
 
 // our shaders will be loaded into this object in index.html
 const shaders = {}; 
@@ -103,7 +103,7 @@ function initGL() {
 
     frameBuffer = gl.createFramebuffer();
 
-    const speed = document.getElementById("speed");
+    gui.speed = document.getElementById("speed");
     speed.oninput = () => {
         const q = (speed.value - speed.min) / (speed.max - speed.min)
         /*
@@ -127,11 +127,14 @@ function initGL() {
     speed.oninput();
 
     // update framerate every second
-    framerate = document.getElementById("framerate");
+    gui.framerate = document.getElementById("framerate");
     framerateInterval = setInterval(() => {
-        framerate.innerText = framecount + " FPS";
+        gui.framerate.innerText = framecount + " FPS";
         framecount = 0;
     }, 1000);
+
+    gui.resetZoom = document.getElementById("reset_zoom");
+    gui.resetZoom.onclick = viewPort.reset.bind(viewPort);
 
     render();
     //setInterval(step, 1000);
