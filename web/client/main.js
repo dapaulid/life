@@ -97,13 +97,11 @@ function initGL() {
 
     textureSizeLocation = gl.getUniformLocation(program, "u_textureSize");
 
-    viewPort = new ViewportControl(canvas, /*render*/)
+    viewPort = new ViewportControl(canvas, changed)
 
     onResize();
 
     frameBuffer = gl.createFramebuffer();
-
-    render();
 
     const speed = document.getElementById("speed");
     speed.oninput = () => {
@@ -135,6 +133,7 @@ function initGL() {
         framecount = 0;
     }, 1000);
 
+    render();
     //setInterval(step, 1000);
 }
 
@@ -157,6 +156,21 @@ function makeRandomArray(rgba){
     return rgba;
 }
 
+let animate = null;
+function changed() {
+    // rendering already requested?
+    if (animate != null) {
+        // yes -> nothing to do
+        return;
+    }
+    // schedule rendering before the next repaint
+    animate = requestAnimationFrame(() => {
+        animate = null;
+        render();
+        framecount++;
+    });
+}
+
 function render(){
 
     //step();
@@ -171,10 +185,6 @@ function render(){
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, currentState);
     twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
-
-    framecount++;
-
-    window.requestAnimationFrame(render);
 }
 
 function step(ticks = 1) {
@@ -198,6 +208,7 @@ function step(ticks = 1) {
         [currentState, lastState] = [lastState, currentState];
     }
 
+    changed();
 }
 
 function onResize(){
