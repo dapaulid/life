@@ -137,11 +137,7 @@ function initGL() {
     gui.resetZoom.onclick = viewPort.reset.bind(viewPort);
 
     gui.pause = document.getElementById("pause");
-    gui.pause.onclick = () => {
-        pause();
-        gui.pause.className = paused ? "button icon-play" : "button icon-pause";
-        gui.tick.disabled = !paused;
-    };
+    gui.pause.onclick = pause;
 
     gui.tick = document.getElementById("tick");
     gui.tick.onclick = () => {
@@ -234,9 +230,13 @@ let paused = false;
 function pause() {
     if (paused) {
         gui.speed.oninput();
+        gui.pause.className = "button icon-pause";
+        gui.tick.disabled = true;
         paused = false;
     } else {
         clearInterval(stepInterval);
+        gui.pause.className = "button icon-play";
+        gui.tick.disabled = false;        
         paused = true;
     }
 }
