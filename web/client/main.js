@@ -243,8 +243,8 @@ function pause() {
 
 function reset() {
 
-    canvas.width = 512;//canvas.clientWidth;
-    canvas.height = 512;//canvas.clientHeight;
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
     width = canvas.clientWidth;
     height = canvas.clientHeight;
 
@@ -275,7 +275,7 @@ function reset() {
         height: height,
         min: gl.NEAREST,
         mag: gl.NEAREST,
-        wrap: gl.REPEAT,
+        //wrap: gl.REPEAT, // needs power of 2
     });
     // initial state
     currentState = twgl.createTexture(gl, {
@@ -284,7 +284,7 @@ function reset() {
         height: height,
         min: gl.NEAREST,
         mag: gl.NEAREST,
-        wrap: gl.REPEAT,
+        //wrap: gl.REPEAT, // needs power of 2
     });
 
     changed();
