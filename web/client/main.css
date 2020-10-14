@@ -9,6 +9,10 @@ html, body {
     position: fixed;
     width: 100%;
     height: 32px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
 }
 .content {
     width: 100%;
@@ -16,7 +20,6 @@ html, body {
     outline: white 2px solid;
 }
 
-.label {
-    font-family: courier;
+label, .label {
     color: white;
 }

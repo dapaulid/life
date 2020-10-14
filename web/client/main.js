@@ -148,6 +148,11 @@ function initGL() {
     gui.reset = document.getElementById("reset");
     gui.reset.onclick = reset;
 
+    gui.edtRule = document.getElementById("edtRule");
+
+    gui.btnRandom = document.getElementById("btnRandom");
+    gui.btnRandom.onclick = random;
+
     //render();
     //setInterval(step, 1000);
 }
@@ -290,3 +295,7 @@ function reset() {
     changed();
 }
 
+function random() {
+    gui.edtRule.value = Rule.random(2).encode();
+    reset();
+}
