@@ -9,8 +9,11 @@ var currentState;
 var lastState;
 var frameBuffer;
 
-var width;
-var height;
+const world = {
+    width: 64,
+    height: 64,
+    tick: 0,
+}
 
 var flipYLocation;
 var tickLocation;
@@ -145,6 +148,11 @@ function initGL() {
 
     gui.btnRandom = document.getElementById("btnRandom");
     gui.btnRandom.onclick = random;
+
+    gui.lblTick = document.getElementById("lblTick");
+
+    setInterval(updateStatus, 100);
+    updateStatus();
 }
 
 const alive = [0.5,1.0,0.7,1.0]
@@ -200,7 +208,7 @@ function render(){
 
 function step(ticks = 1) {
 
-    gl.viewport(0, 0, width, height);
+    gl.viewport(0, 0, world.width, world.height);
 
     // don't y flip images while drawing to the textures
     gl.uniform1f(flipYLocation, 1);
@@ -219,6 +227,9 @@ function step(ticks = 1) {
 
         // lastState is now our new currentState
         [currentState, lastState] = [lastState, currentState];
+
+        // increase time
+        world.tick++
     }
 
     changed();
@@ -241,13 +252,10 @@ function pause() {
 
 function reset() {
 
-    width = 64;//canvas.clientWidth;
-    height = 64;//canvas.clientHeight;
-
     // set the size of the texture
-    gl.uniform2f(textureSizeLocation, width, height);
+    gl.uniform2f(textureSizeLocation, world.width, world.height);
 
-    var rgba = new Uint8Array(width*height*4);
+    var rgba = new Uint8Array(world.width*world.height*4);
     for (var i=0;i<rgba.length/4;i++) {
         var ii = i * 4;
         rgba[ii] = 0
@@ -262,23 +270,26 @@ function reset() {
 
     rgba = makeRandomArray(rgba);
 
+    // big bang conditions
+    world.ticks = 0;
+
     // empty texture 
     lastState = twgl.createTexture(gl, {
         src: null,
-        width: width,
-        height: height,
+        width: world.width,
+        height: world.height,
         min: gl.NEAREST,
         mag: gl.NEAREST,
-        //wrap: gl.REPEAT, // needs power of 2
+        wrap: gl.REPEAT, // needs power of 2
     });
     // initial state
     currentState = twgl.createTexture(gl, {
         src: rgba,
-        width: width,
-        height: height,
+        width: world.width,
+        height: world.height,
         min: gl.NEAREST,
         mag: gl.NEAREST,
-        //wrap: gl.REPEAT, // needs power of 2
+        wrap: gl.REPEAT, // needs power of 2
     });
 
     changed();
@@ -287,4 +298,8 @@ function reset() {
 function random() {
     gui.edtRule.value = Rule.random(2).encode();
     reset();
+}
+
+function updateStatus() {
+    gui.lblTick.innerText = "Tick: " + world.tick;
 }
