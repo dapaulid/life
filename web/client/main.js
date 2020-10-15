@@ -199,16 +199,16 @@ function changed() {
 
 function render(){
 
-    const w = canvas.width;
-    const h = canvas.height;
-    const m = Math.min(w, h);
-
-    gl.viewport(0, 0, w, h);
+    gl.viewport(0, 0, canvas.width, canvas.height);
 
     gl.uniform1f(flipYLocation, -1);  // need to y flip for canvas
     gl.uniform1f(tickLocation, false);
+
+    const m = Math.min(canvas.width, canvas.height);
     twgl.setUniforms(programInfo, {
-        u_matrix: m3.scale(viewPort.matrix, m / w, m / h),
+        // the additional scaling may not intuitive (because simplified),
+        // but basically keeps the aspect ratio when resizing the canvas
+        u_matrix: m3.scale(viewPort.matrix, m / canvas.clientWidth, m / canvas.clientHeight),
     });        
 
     //draw to canvas
