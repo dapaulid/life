@@ -36,6 +36,20 @@ window.onload = initGL;
 
 const rule = Rule.random(2); //new Rule([0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1])
 
+const conway = Rule.generate(2, (cell, counts) => {
+    // 1. Any live cell with two or three live neighbours survives.
+    if ((cell == 1) && ((counts[1] == 2) || (counts[1] == 3))) {
+        return 1;
+    }
+    // 2. Any dead cell with three live neighbours becomes a live cell.
+    if ((cell == 0) && (counts[1] == 3)) {
+        return 1;
+    }
+    // 3. All other live cells die in the next generation. Similarly, all other dead cells stay dead.
+    return 0;
+});
+console.log(conway.encode());
+
 function initGL() {
 
     // Get A WebGL context
@@ -186,6 +200,7 @@ function changed() {
 function render(){
 
     //step();
+    gl.viewport(0, 0, canvas.width, canvas.height);
 
     gl.uniform1f(flipYLocation, -1);  // need to y flip for canvas
     gl.uniform1f(tickLocation, false);
@@ -200,6 +215,8 @@ function render(){
 }
 
 function step(ticks = 1) {
+
+    gl.viewport(0, 0, width, height);
 
     // don't y flip images while drawing to the textures
     gl.uniform1f(flipYLocation, 1);
@@ -242,10 +259,8 @@ function reset() {
 
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-    width = canvas.clientWidth;
-    height = canvas.clientHeight;
-
-    gl.viewport(0, 0, width, height);
+    width = 64;//canvas.clientWidth;
+    height = 64;//canvas.clientHeight;
 
     // set the size of the texture
     gl.uniform2f(textureSizeLocation, width, height);
