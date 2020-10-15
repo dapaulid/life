@@ -13,12 +13,13 @@ for (let i = 0; i < B64_CHARS.length; i++) {
 const B64_MASK  = 0x3Fn
 const B64_SHIFT = 6n;
 
+const NEIGH_SIZE = 9; // size of a 3x3 Moore neighborhood including center
 
 class Rule {
 
 	constructor(array) {
 		this.array = array;
-		this.states = Math.pow(this.array.length, 1/9);
+		this.states = Math.pow(this.array.length, 1/NEIGH_SIZE);
 	}
 
 	encode() {
@@ -49,7 +50,7 @@ class Rule {
 			num += BigInt(val);
 		}
 		const radix = BigInt(states);
-		const n = Math.pow(states, 9);
+		const n = Math.pow(states, NEIGH_SIZE);
 		let array = [];
 		for (let i = 0; i < n; i++) {
 			array[n-i-1] = Number(num % radix);
@@ -60,10 +61,46 @@ class Rule {
 	}
 
 	static random(states) {
-		const n = Math.pow(states, 9);
+		const n = Math.pow(states, NEIGH_SIZE);
 		let array = []
 		for (let i = 0; i < n; i++) {
 			array[i] = Math.floor(Math.random() * states);
+		}
+		return new Rule(array);
+	}
+
+	static generate(states, func) {
+		let array = []
+		let neigh = zeros(NEIGH_SIZE+1); // add one for sentinel
+		while (!neigh[NEIGH_SIZE]) {
+
+			// determine state of center cell
+			let cell = neigh[0];
+			
+			// count cells for each states
+			// start from 1 to exclude center
+			let counts = zeros(states);
+			for (let i = 1; i < NEIGH_SIZE; i++) {
+				counts[neigh[i]]++;
+			}
+
+			// determine transition for this configuration
+			let next_cell = func(cell, counts);
+			if (!Number.isInteger(next_cell)) {
+				throw TypeError("returned state must be an integer");
+			}
+			if ((next_cell < 0) || (next_cell >= states)) {
+				throw RangeError("returned state must be between 0 and " + (states-1));
+			}
+			array.push(next_cell);
+
+			// increment with overflow
+			for (let i = 0; i <= NEIGH_SIZE; i++) {
+				neigh[i] = (neigh[i] + 1) % states;
+				if (neigh[i] != 0) {
+					break;
+				}
+			}
 		}
 		return new Rule(array);
 	}
@@ -71,4 +108,8 @@ class Rule {
 
 function getRuleSize(states) {
     return Math.ceil(Math.pow(states, 9) * Math.log(states)/Math.log(64));
+}
+
+function zeros(n) {
+	return new Array(n).fill(0);
 }
