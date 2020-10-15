@@ -148,7 +148,7 @@ class ViewportControl {
 
 		// multiply the wheel movement by the current zoom level
 		// so we zoom less when zoomed in and more when zoomed out
-		const newZoom = this.camera.zoom * Math.pow(2, e.deltaY * -0.01);
+		const newZoom = this.camera.zoom * Math.pow(2, e.deltaY * -0.005);
 		this.camera.zoom = Math.max(0.02, Math.min(100, newZoom));
 
 		this.updateViewProjection();
