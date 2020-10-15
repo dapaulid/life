@@ -54,8 +54,8 @@ function initGL() {
 
     // Get A WebGL context
     canvas = document.getElementById("glcanvas");
-    //canvas.width = canvas.clientWidth;
-    //canvas.height = canvas.clientHeight;
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 
     gl = twgl.getWebGLContext(canvas, { antialias: false });
     if (!gl) {
@@ -206,9 +206,7 @@ function render(){
 
     const m = Math.min(canvas.width, canvas.height);
     twgl.setUniforms(programInfo, {
-        // the additional scaling may not intuitive (because simplified),
-        // but basically keeps the aspect ratio when resizing the canvas
-        u_matrix: m3.scale(viewPort.matrix, m / canvas.clientWidth, m / canvas.clientHeight),
+        u_matrix: viewPort.matrix,
     });        
 
     //draw to canvas
@@ -260,8 +258,6 @@ function pause() {
 
 function reset() {
 
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
     width = 64;//canvas.clientWidth;
     height = 64;//canvas.clientHeight;
 

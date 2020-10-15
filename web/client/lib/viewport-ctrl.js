@@ -29,6 +29,7 @@ class ViewportControl {
 		window.addEventListener('mousemove', this.handleMouseMove.bind(this));
 		window.addEventListener('mouseup', this.handleMouseUp.bind(this));
 		this.canvas.addEventListener('wheel', this.handleMouseWheel.bind(this));
+		window.addEventListener('resize', this.handleResize.bind(this));
 
 		// go to initial state
 		this.reset();
@@ -57,6 +58,12 @@ class ViewportControl {
 		cameraMat = m3.scale(cameraMat, zoomScale, zoomScale);
 		let viewMat = m3.inverse(cameraMat);
 		this.matrix = m3.multiply(projectionMat, viewMat);
+
+		// the additional scaling may not intuitive (because simplified),
+        // but basically keeps the aspect ratio when resizing the canvas
+		const m = Math.min(this.canvas.width, this.canvas.height);
+		this.matrix = m3.scale(this.matrix, m / this.canvas.clientWidth, m / this.canvas.clientHeight)
+
 		this.invMatrix = m3.inverse(this.matrix);
 	}
 
@@ -150,6 +157,10 @@ class ViewportControl {
 		this.camera.x += preZoomX - postZoomX;
 		this.camera.y += preZoomY - postZoomY;
 
+		this.changed();
+	}
+
+	handleResize(e) {
 		this.changed();
 	}
 
