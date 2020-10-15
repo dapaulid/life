@@ -54,8 +54,6 @@ function initGL() {
 
     // Get A WebGL context
     canvas = document.getElementById("glcanvas");
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
 
     gl = twgl.getWebGLContext(canvas, { antialias: false });
     if (!gl) {

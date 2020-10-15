@@ -39,12 +39,17 @@ class ViewportControl {
 	}
 
 	reset() {
+		// reset camera
 		this.camera = {
 			x: 0,
 			y: 0,
 			rotation: 0,
 			zoom: 1,
 		};
+		// reset aspect ratio
+		this.canvas.width = this.canvas.clientWidth;
+		this.canvas.height = this.canvas.clientHeight;		
+		// done		
 		this.changed();	
 	}
 
