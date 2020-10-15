@@ -5,7 +5,8 @@ html, body {
     height: 100%;    
     background-color: #242424;
     display: flex;
-    flex-direction: column;    
+    flex-direction: column;
+    font-family: "Lucida Grande", sans-serif;
 }
 .header, .footer {
     height: 32px;

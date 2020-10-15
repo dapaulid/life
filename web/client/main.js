@@ -271,7 +271,7 @@ function reset() {
     rgba = makeRandomArray(rgba);
 
     // big bang conditions
-    world.ticks = 0;
+    world.tick = 0;
 
     // empty texture 
     lastState = twgl.createTexture(gl, {
