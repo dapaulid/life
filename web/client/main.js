@@ -199,13 +199,16 @@ function changed() {
 
 function render(){
 
-    //step();
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    const w = canvas.width;
+    const h = canvas.height;
+    const m = Math.min(w, h);
+
+    gl.viewport(0, 0, w, h);
 
     gl.uniform1f(flipYLocation, -1);  // need to y flip for canvas
     gl.uniform1f(tickLocation, false);
     twgl.setUniforms(programInfo, {
-        u_matrix: viewPort.matrix,
+        u_matrix: m3.scale(viewPort.matrix, m / w, m / h),
     });        
 
     //draw to canvas
