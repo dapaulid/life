@@ -110,19 +110,8 @@ function initGL() {
     gui.speed = document.getElementById("speed");
     gui.speed.oninput = () => {
         const q = (speed.value - speed.min) / (speed.max - speed.min)
-        /*
-        1000
-        500
-        250
-        125, 1
-        62.5, 2
-        31.25, 4
-        15, 8
-
-        */
         const e = q * 3;
         const interval = 10 ** e;
-        console.log(e, interval);
         if (stepInterval) {
             clearInterval(stepInterval);
         }
@@ -156,9 +145,6 @@ function initGL() {
 
     gui.btnRandom = document.getElementById("btnRandom");
     gui.btnRandom.onclick = random;
-
-    //render();
-    //setInterval(step, 1000);
 }
 
 const alive = [0.5,1.0,0.7,1.0]
@@ -202,7 +188,6 @@ function render(){
     gl.uniform1f(flipYLocation, -1);  // need to y flip for canvas
     gl.uniform1f(tickLocation, false);
 
-    const m = Math.min(canvas.width, canvas.height);
     twgl.setUniforms(programInfo, {
         u_matrix: viewPort.matrix,
     });        
