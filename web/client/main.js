@@ -159,8 +159,12 @@ function initGL() {
 
     canvas.addEventListener('dblclick', pause);
 
-    reset();
+    // get initial values
+    const params = getUrlParams();
+    gui.cbxSize.value = params.size || gui.cbxSize.value;
+    gui.edtRule.value = params.rule || gui.edtRule.value;
 
+    reset();
     setIntervalAndRun(updateStatus, 100);
 }
 
@@ -265,6 +269,11 @@ function reset() {
     world.width = gui.cbxSize.value;
     world.height = gui.cbxSize.value;
 
+    setUrlParams({
+        size: gui.cbxSize.value,
+        rule: gui.edtRule.value,
+    });
+
     // set the size of the texture
     gl.uniform2f(textureSizeLocation, world.width, world.height);
 
@@ -317,7 +326,30 @@ function updateStatus() {
     gui.outTick.value = "Tick: " + world.tick;
 }
 
+//------------------------------------------------------------------------------
+// helpers
+//------------------------------------------------------------------------------
+
 function setIntervalAndRun(handler, timeout) {
     handler();
     return setInterval(handler, timeout)
+}
+
+function setUrlParams(params) {
+    const searchParams = new URLSearchParams(location.search);
+    for (let key in params) {
+        if ((params[key] != null) && (params[key] != "")) {
+            searchParams.set(key, params[key]);
+        }
+    }
+    window.history.replaceState(null, '', location.pathname + '?' + searchParams.toString());
+}
+
+function getUrlParams() {
+    const params = {};
+    const searchParams = new URLSearchParams(location.search);
+    for (let entry of searchParams.entries()) {
+        params[entry[0]] = entry[1];
+    }
+    return params;
 }
