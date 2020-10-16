@@ -63,13 +63,13 @@ class ViewportControl {
 		cameraMat = m3.scale(cameraMat, zoomScale, zoomScale);
 		let viewMat = m3.inverse(cameraMat);
 		this.matrix = m3.multiply(projectionMat, viewMat);
+		this.invMatrix = m3.inverse(this.matrix);
 
 		// the additional scaling may not intuitive (because simplified),
-        // but basically keeps the aspect ratio when resizing the canvas
+		// but basically keeps the aspect ratio when resizing the canvas
+		// NOTE: this seems not to belong into the inverted matrix...
 		const m = Math.min(this.canvas.width, this.canvas.height);
 		this.matrix = m3.scale(this.matrix, m / this.canvas.clientWidth, m / this.canvas.clientHeight)
-
-		this.invMatrix = m3.inverse(this.matrix);
 	}
 
 	getClipSpaceMousePosition(e) {
