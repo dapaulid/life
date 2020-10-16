@@ -106,8 +106,6 @@ function initGL() {
 
     viewPort = new ViewportControl(canvas, changed)
 
-    reset();
-
     frameBuffer = gl.createFramebuffer();
 
     gui.speed = document.getElementById("speed");
@@ -144,12 +142,23 @@ function initGL() {
     gui.reset = document.getElementById("reset");
     gui.reset.onclick = reset;
 
+    gui.cbxSize = document.getElementById("cbxSize");
+    const maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    for (let size = 16; size <= maxSize; size <<= 1) {
+        const label = (size > 4096 ? "⚠️" : "") + size;
+        gui.cbxSize.add(new Option(label, size));
+    }
+    gui.cbxSize.value = Math.min(1024, maxSize);
+    
+
     gui.edtRule = document.getElementById("edtRule");
 
     gui.btnRandom = document.getElementById("btnRandom");
     gui.btnRandom.onclick = random;
 
     gui.lblTick = document.getElementById("lblTick");
+
+    reset();
 
     setInterval(updateStatus, 100);
     updateStatus();
@@ -251,6 +260,10 @@ function pause() {
 }
 
 function reset() {
+
+    // update world properties from GUI
+    world.width = gui.cbxSize.value;
+    world.height = gui.cbxSize.value;
 
     // set the size of the texture
     gl.uniform2f(textureSizeLocation, world.width, world.height);
