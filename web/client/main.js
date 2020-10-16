@@ -158,6 +158,8 @@ function initGL() {
 
     gui.lblTick = document.getElementById("lblTick");
 
+    canvas.addEventListener('dblclick', pause);
+
     reset();
 
     setInterval(updateStatus, 100);
