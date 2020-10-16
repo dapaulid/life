@@ -23,7 +23,6 @@ var programInfo
 var bufferInfo
 
 let stepInterval;
-let framerateInterval;
 let framecount = 0;
 
 //let viewProjectionMat;
@@ -122,8 +121,8 @@ function initGL() {
 
     // update framerate every second
     gui.framerate = document.getElementById("framerate");
-    framerateInterval = setInterval(() => {
-        gui.framerate.innerText = framecount + " FPS";
+    setIntervalAndRun(() => {
+        gui.framerate.innerText = "FPS: " + framecount;
         framecount = 0;
     }, 1000);
 
@@ -162,8 +161,7 @@ function initGL() {
 
     reset();
 
-    setInterval(updateStatus, 100);
-    updateStatus();
+    setIntervalAndRun(updateStatus, 100);
 }
 
 const alive = [0.5,1.0,0.7,1.0]
@@ -317,4 +315,9 @@ function random() {
 
 function updateStatus() {
     gui.lblTick.innerText = "Tick: " + world.tick;
+}
+
+function setIntervalAndRun(handler, timeout) {
+    handler();
+    return setInterval(handler, timeout)
 }
