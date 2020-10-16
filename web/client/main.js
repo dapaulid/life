@@ -107,9 +107,9 @@ function initGL() {
 
     frameBuffer = gl.createFramebuffer();
 
-    gui.speed = document.getElementById("speed");
-    gui.speed.oninput = () => {
-        const q = (speed.value - speed.min) / (speed.max - speed.min)
+    gui.rngSpeed = document.getElementById("rngSpeed");
+    gui.rngSpeed.oninput = () => {
+        const q = (rngSpeed.value - rngSpeed.min) / (rngSpeed.max - rngSpeed.min)
         const e = q * 3;
         const interval = 10 ** e;
         if (stepInterval) {
@@ -117,29 +117,29 @@ function initGL() {
         }
         stepInterval = setInterval(step, interval);
     }
-    gui.speed.oninput();
+    gui.rngSpeed.oninput();
 
     // update framerate every second
-    gui.framerate = document.getElementById("framerate");
+    gui.outFPS = document.getElementById("outFPS");
     setIntervalAndRun(() => {
-        gui.framerate.innerText = "FPS: " + framecount;
+        gui.outFPS.value = "FPS: " + framecount;
         framecount = 0;
     }, 1000);
 
-    gui.resetZoom = document.getElementById("reset_zoom");
-    gui.resetZoom.onclick = viewPort.reset.bind(viewPort);
+    gui.btnResetView = document.getElementById("btnResetView");
+    gui.btnResetView.onclick = viewPort.reset.bind(viewPort);
 
-    gui.pause = document.getElementById("pause");
-    gui.pause.onclick = pause;
+    gui.btnPause = document.getElementById("btnPause");
+    gui.btnPause.onclick = pause;
 
-    gui.tick = document.getElementById("tick");
-    gui.tick.onclick = () => {
+    gui.btnTick = document.getElementById("btnTick");
+    gui.btnTick.onclick = () => {
         step(1);
     };
-    gui.tick.disabled = true;
+    gui.btnTick.disabled = true;
 
-    gui.reset = document.getElementById("reset");
-    gui.reset.onclick = reset;
+    gui.btnResetWorld = document.getElementById("btnResetWorld");
+    gui.btnResetWorld.onclick = reset;
 
     gui.cbxSize = document.getElementById("cbxSize");
     const maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
@@ -155,7 +155,7 @@ function initGL() {
     gui.btnRandom = document.getElementById("btnRandom");
     gui.btnRandom.onclick = random;
 
-    gui.lblTick = document.getElementById("lblTick");
+    gui.outTick = document.getElementById("outTick");
 
     canvas.addEventListener('dblclick', pause);
 
@@ -247,14 +247,14 @@ function step(ticks = 1) {
 let paused = false;
 function pause() {
     if (paused) {
-        gui.speed.oninput();
-        gui.pause.className = "button icon-pause";
-        gui.tick.disabled = true;
+        gui.rngSpeed.oninput();
+        gui.btnPause.className = "button icon-pause";
+        gui.btnTick.disabled = true;
         paused = false;
     } else {
         clearInterval(stepInterval);
-        gui.pause.className = "button icon-play";
-        gui.tick.disabled = false;        
+        gui.btnPause.className = "button icon-play";
+        gui.btnTick.disabled = false;        
         paused = true;
     }
 }
@@ -314,7 +314,7 @@ function random() {
 }
 
 function updateStatus() {
-    gui.lblTick.innerText = "Tick: " + world.tick;
+    gui.outTick.value = "Tick: " + world.tick;
 }
 
 function setIntervalAndRun(handler, timeout) {
