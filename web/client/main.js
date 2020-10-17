@@ -13,7 +13,12 @@ const world = {
     width: 64,
     height: 64,
     tick: 0,
+    history: null,
 }
+
+const speeds = [
+    1, 2, 5, 10, 25, 50, 100, 250, 500, 1000
+];
 
 var flipYLocation;
 var tickLocation;
@@ -24,6 +29,7 @@ var bufferInfo
 
 let stepInterval;
 let framecount = 0;
+let ticksPerSec = 0;
 
 //let viewProjectionMat;
 let viewPort;
@@ -107,11 +113,13 @@ function initGL() {
 
     frameBuffer = gl.createFramebuffer();
 
+    gui.outTicksPerSec = document.getElementById("outTicksPerSec");
+
     gui.rngSpeed = document.getElementById("rngSpeed");
     gui.rngSpeed.oninput = () => {
-        const q = (rngSpeed.value - rngSpeed.min) / (rngSpeed.max - rngSpeed.min)
-        const e = q * 3;
-        const interval = 10 ** e;
+        ticksPerSec = speeds[rngSpeed.value];
+        gui.outTicksPerSec.value = ticksPerSec + " tick/s";
+        let interval = 1000 / ticksPerSec;
         if (stepInterval) {
             clearInterval(stepInterval);
         }
@@ -137,6 +145,12 @@ function initGL() {
         step(1);
     };
     gui.btnTick.disabled = true;
+
+    gui.btnPreviousMark = document.getElementById("btnPreviousMark");
+    gui.btnPreviousMark.onclick = previousMark;
+
+    gui.btnNextMark = document.getElementById("btnNextMark");
+    gui.btnNextMark.onclick = nextMark;    
 
     gui.btnResetWorld = document.getElementById("btnResetWorld");
     gui.btnResetWorld.onclick = reset;
@@ -234,6 +248,7 @@ function step(ticks = 1) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
     
     for (let i = 0; i < ticks; i++) {
+
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lastState, 0);
         gl.bindTexture(gl.TEXTURE_2D, currentState);
         twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
@@ -243,6 +258,11 @@ function step(ticks = 1) {
 
         // increase time
         world.tick++
+
+        // set a navigation mark every second
+        if (world.tick % ticksPerSec == 0) {
+            setMark();
+        }
     }
 
     changed();
@@ -263,11 +283,72 @@ function pause() {
     }
 }
 
+class History {
+    constructor(capacity) {
+        this.states = new Map();
+        this.capacity = capacity
+    }
+
+    clear() {
+        this.states.clear();
+    }
+
+    add(tick, state) {
+        if (this.states.size >= this.capacity) {
+            // delete first to free space
+            this.states.delete(this.states.keys().next().value);
+        }
+        this.states.set(tick, state);
+        console.log("History size: " + (this.getMemoryUsage() >> 10) + " KB");
+    }
+
+    get(tick) {
+        return this.states.get(tick);
+    }
+
+    has(tick) {
+        return this.states.has(tick);
+    }
+
+    previous(tick) {
+        return this.reduce((ret, e) => ((e[0] < tick) && (!ret || (e[0] > ret[0]))) ? e : ret) || [null, null];
+    }
+
+    next(tick) {
+        return this.reduce((ret, e) => ((e[0] > tick) && (!ret || (e[0] < ret[0]))) ? e : ret) || [null, null];
+    }    
+
+    getSize() {
+        return this.states.size;
+    }
+
+    getMemoryUsage() {
+        let bytes = 0;
+        for (let state of this.states.values()) {
+            bytes += state.byteLength;
+        }
+        return bytes;
+    }
+
+    empty() {
+        return this.states.size == 0;
+    }
+
+    reduce(callback, initialValue) {
+        let ret = initialValue;
+        for (let e of this.states) {
+            ret = callback(ret, e);
+        }
+        return ret;        
+    }    
+}
+
 function reset() {
 
     // update world properties from GUI
     world.width = gui.cbxSize.value;
     world.height = gui.cbxSize.value;
+    world.history = new History(32);
 
     setUrlParams({
         size: gui.cbxSize.value,
@@ -292,10 +373,7 @@ function reset() {
 
     rgba = makeRandomArray(rgba);
 
-    // big bang conditions
-    world.tick = 0;
-
-    // empty texture 
+     // empty texture 
     lastState = twgl.createTexture(gl, {
         src: null,
         width: world.width,
@@ -314,7 +392,28 @@ function reset() {
         wrap: gl.REPEAT, // needs power of 2
     });
 
+    // big bang conditions
+    world.tick = 0;
+
+    // remember initial state
+    setMark();
+
+    // ready to render
     changed();
+}
+
+function setCurrentState(data) {
+    gl.bindTexture(gl.TEXTURE_2D, currentState)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, world.width, world.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    changed();
+}
+
+function getCurrentState() {
+    let data = new Uint8Array(world.width * world.height * 4);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, currentState, 0);
+    gl.readPixels(0, 0, world.width, world.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    return data;
 }
 
 function random() {
@@ -324,6 +423,35 @@ function random() {
 
 function updateStatus() {
     gui.outTick.value = "Tick: " + world.tick;
+}
+
+function setTick(tick) {
+    world.tick = tick;
+}
+
+function setMark() {
+    // update history
+    if (!world.history.has(world.tick)) {
+        world.history.add(world.tick, getCurrentState());
+    }
+}
+
+function previousMark() {
+    let [tick, state] = world.history.previous(world.tick);
+    if (tick != null) {
+        setCurrentState(state);
+        setTick(tick);
+    }
+    return tick;
+}
+
+function nextMark() {
+    let [tick, state] = world.history.next(world.tick);
+    if (tick != null) {
+        setCurrentState(state);
+        setTick(tick);
+    }
+    return tick;
 }
 
 //------------------------------------------------------------------------------
