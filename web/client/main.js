@@ -294,6 +294,7 @@ class History {
     constructor(capacity) {
         this.states = new Map();
         this.capacity = capacity
+        this.memoryUsage = 0; // bytes
     }
 
     clear() {
@@ -301,12 +302,28 @@ class History {
     }
 
     add(tick, state) {
-        if (this.states.size >= this.capacity) {
-            // delete first to free space
-            this.states.delete(this.states.keys().next().value);
+        if (this.has(tick)) {
+            return false;
+        }
+        if (this.memoryUsage + state.byteLength > this.capacity) {
+            // make room
+            if (!this.freeMemory(state.byteLength)) {
+                return false;
+            }
         }
         this.states.set(tick, state);
-        console.log("History size: " + (this.getMemoryUsage() >> 10) + " KB");
+        this.memoryUsage += state.byteLength;
+        console.log("History: " + this.count + " entries, " + (this.memoryUsage >> 10) + " KB");
+    }
+
+    remove(tick) {
+        let state = this.get(tick);
+        if (!state) {
+            return false;
+        }
+        this.states.delete(tick);
+        this.memoryUsage -= state.byteLength;        
+        return true;
     }
 
     get(tick) {
@@ -325,16 +342,18 @@ class History {
         return this.reduce((ret, e) => ((e[0] > tick) && (!ret || (e[0] < ret[0]))) ? e : ret) || [null, null];
     }    
 
-    getSize() {
+    get count() {
         return this.states.size;
     }
 
-    getMemoryUsage() {
-        let bytes = 0;
-        for (let state of this.states.values()) {
-            bytes += state.byteLength;
+    freeMemory(bytes) {
+        while ((bytes > 0) && !this.empty()) {
+            let [tick, state] = this.states.entries().next().value;
+            this.remove(tick);
+            bytes -= state.byteLength;
+
         }
-        return bytes;
+        return bytes <= 0;
     }
 
     empty() {
@@ -355,7 +374,7 @@ function reset() {
     // update world properties from GUI
     world.width = gui.cbxSize.value;
     world.height = gui.cbxSize.value;
-    world.history = new History(32);
+    world.history = new History(1024*1024*100);
 
     setUrlParams({
         size: gui.cbxSize.value,
