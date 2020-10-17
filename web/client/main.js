@@ -29,6 +29,7 @@ var bufferInfo
 
 let stepInterval;
 let framecount = 0;
+let tickcount = 0;
 let ticksPerSec = 0;
 
 //let viewProjectionMat;
@@ -129,7 +130,10 @@ function initGL() {
 
     // update framerate every second
     gui.outFPS = document.getElementById("outFPS");
+    gui.outTPS = document.getElementById("outTPS");
     setIntervalAndRun(() => {
+        gui.outTPS.value = "TPS: " + tickcount;
+        tickcount = 0;        
         gui.outFPS.value = "FPS: " + framecount;
         framecount = 0;
     }, 1000);
@@ -263,6 +267,9 @@ function step(ticks = 1) {
         if (world.tick % ticksPerSec == 0) {
             setMark();
         }
+
+        // statistics
+        tickcount++;
     }
 
     changed();
