@@ -14,6 +14,7 @@ const world = {
     height: 64,
     tick: 0,
     history: null,
+    tempLastMark: null,
 }
 
 const speeds = [
@@ -261,7 +262,7 @@ function step(ticks = 1) {
         [currentState, lastState] = [lastState, currentState];
 
         // increase time
-        world.tick++
+        setTick(world.tick + 1);
 
         // set a navigation mark every second
         if (world.tick % ticksPerSec == 0) {
@@ -295,10 +296,16 @@ class History {
         this.states = new Map();
         this.capacity = capacity
         this.memoryUsage = 0; // bytes
+        this.first = null;
+        this.last = null;
+        this.clear()
     }
 
     clear() {
         this.states.clear();
+        this.memoryUsage = 0;
+        this.first = null;
+        this.last = null;        
     }
 
     add(tick, state) {
@@ -312,6 +319,12 @@ class History {
             }
         }
         this.states.set(tick, state);
+        if ((this.first == null) || (this.first > tick)) {
+            this.first = tick;
+        }
+        if ((this.last == null) || (this.last < tick)) {
+            this.last = tick;
+        }
         this.memoryUsage += state.byteLength;
         console.log("History: " + this.count + " entries, " + (this.memoryUsage >> 10) + " KB");
     }
@@ -322,6 +335,12 @@ class History {
             return false;
         }
         this.states.delete(tick);
+        if (this.first == tick) {
+            this.first = this.next(tick)[0];
+        }
+        if (this.last == tick) {
+            this.last = this.previous(tick)[0];
+        }
         this.memoryUsage -= state.byteLength;        
         return true;
     }
@@ -375,6 +394,7 @@ function reset() {
     world.width = gui.cbxSize.value;
     world.height = gui.cbxSize.value;
     world.history = new History(1024*1024*100);
+    world.tempLastMark = null;
 
     setUrlParams({
         size: gui.cbxSize.value,
@@ -419,7 +439,7 @@ function reset() {
     });
 
     // big bang conditions
-    world.tick = 0;
+    setTick(0);
 
     // remember initial state
     setMark();
@@ -453,30 +473,46 @@ function updateStatus() {
 
 function setTick(tick) {
     world.tick = tick;
+    gui.btnPreviousMark.disabled = world.history.empty() || (world.history.first >= tick);
+    gui.btnNextMark.disabled = world.history.empty() || (world.history.last <= tick);
 }
 
 function setMark() {
+    // did we surpass a temporary mark?
+    if ((world.tempLastMark != null) && (world.tempLastMark < world.tick)) {
+        // yes -> remove it
+        world.history.remove(world.tempLastMark);
+        world.tempLastMark = null;
+    }
     // update history
     if (!world.history.has(world.tick)) {
         world.history.add(world.tick, getCurrentState());
     }
+    return world.tick;
 }
 
 function previousMark() {
-    let [tick, state] = world.history.previous(world.tick);
-    if (tick != null) {
-        setCurrentState(state);
-        setTick(tick);
+    // do we have a mark here yet?
+    if (world.history.last < world.tick) {
+        // no -> set a temporary mark here so that we'll find back
+        world.tempLastMark = setMark();
     }
+    let [tick, state] = world.history.previous(world.tick);
+    if (tick == null) {
+        return null;
+    }
+    setCurrentState(state);
+    setTick(tick);
     return tick;
 }
 
 function nextMark() {
     let [tick, state] = world.history.next(world.tick);
-    if (tick != null) {
-        setCurrentState(state);
-        setTick(tick);
+    if (tick == null) {
+        return null;
     }
+    setCurrentState(state);
+    setTick(tick);
     return tick;
 }
 
