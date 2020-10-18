@@ -28,7 +28,7 @@ html, body {
     min-height: 0;
 }
 .footer {
-    justify-content: center;
+    justify-content: left;
 }
 
 label, output {

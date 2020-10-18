@@ -122,8 +122,8 @@ function initGL() {
             pause();
         }
         moveToMark(gui.rngTick.value);
-        //console.log(gui.rngTick.value, world.history.indexToTick(gui.rngTick.value));
     }
+    makeWheelable(gui.rngTick);
 
     gui.rngSpeed = document.getElementById("rngSpeed");
     gui.rngSpeed.oninput = () => {
@@ -135,6 +135,7 @@ function initGL() {
         }
         stepInterval = setInterval(step, interval);
     }
+    makeWheelable(gui.rngSpeed);
     gui.rngSpeed.oninput();
 
     // update framerate every second
@@ -185,6 +186,26 @@ function initGL() {
     gui.outTick = document.getElementById("outTick");
 
     canvas.addEventListener('dblclick', pause);
+
+    window.addEventListener('keydown', (e) => {
+        // handle key
+        switch (e.code) {
+        case 'Space': 
+            pause();
+            break;
+        default:
+            // ignore
+            return;
+        }
+        // when we get here, we handled the key
+        e.preventDefault();
+        // is an input element focused?
+        if (e.target.tagName.toLowerCase() == 'input') {
+            // yes -> emit a warning, as we might "steal" its input,
+            // which may not be what we want in all cases
+            console.debug("global keydown handled while input element was active");
+        }        
+    })
 
     // get initial values
     const params = getUrlParams();
@@ -564,6 +585,18 @@ function nextMark() {
 function setIntervalAndRun(handler, timeout) {
     handler();
     return setInterval(handler, timeout)
+}
+
+function makeWheelable(element) {
+    element.addEventListener("wheel", (e) => {
+        if (e.deltaY < 0) {
+            e.target.value++;
+            e.target.oninput();
+        } else if (e.deltaY > 0) {
+            e.target.value--;
+            e.target.oninput();
+        }
+    }, { passive: true });
 }
 
 function setUrlParams(params) {
