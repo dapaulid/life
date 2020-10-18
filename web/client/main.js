@@ -58,7 +58,6 @@ const conway = Rule.generate(2, (cell, counts) => {
     // 3. All other live cells die in the next generation. Similarly, all other dead cells stay dead.
     return 0;
 });
-console.log(conway.encode());
 
 function initGL() {
 
@@ -119,7 +118,11 @@ function initGL() {
 
     gui.rngTick = document.getElementById("rngTick");
     gui.rngTick.oninput = () => {
-        console.log(gui.rngTick.value, world.history.indexToTick(gui.rngTick.value));
+        if (!paused) {
+            pause();
+        }
+        moveToMark(gui.rngTick.value);
+        //console.log(gui.rngTick.value, world.history.indexToTick(gui.rngTick.value));
     }
 
     gui.rngSpeed = document.getElementById("rngSpeed");
@@ -278,6 +281,7 @@ function step(ticks = 1) {
         tickcount++;
     }
 
+    updateControls();
     changed();
 }
 
@@ -299,18 +303,16 @@ function pause() {
 class History {
     constructor(capacity) {
         this.states = new Map();
+        this.ticks = new SortedArray();
         this.capacity = capacity
         this.memoryUsage = 0; // bytes
-        this.first = null;
-        this.last = null;
         this.clear()
     }
 
     clear() {
         this.states.clear();
+        this.ticks.clear();
         this.memoryUsage = 0;
-        this.first = null;
-        this.last = null;        
     }
 
     add(tick, state) {
@@ -324,14 +326,9 @@ class History {
             }
         }
         this.states.set(tick, state);
-        if ((this.first == null) || (this.first > tick)) {
-            this.first = tick;
-        }
-        if ((this.last == null) || (this.last < tick)) {
-            this.last = tick;
-        }
+        this.ticks.add(tick);
         this.memoryUsage += state.byteLength;
-        console.log("History: " + this.count + " entries, " + (this.memoryUsage >> 10) + " KB");
+        console.debug("[History] added tick " + tick + ", memory usage: " + this.getUsagePercent() + "%");
     }
 
     remove(tick) {
@@ -340,13 +337,9 @@ class History {
             return false;
         }
         this.states.delete(tick);
-        if (this.first == tick) {
-            this.first = this.next(tick)[0];
-        }
-        if (this.last == tick) {
-            this.last = this.previous(tick)[0];
-        }
-        this.memoryUsage -= state.byteLength;        
+        this.ticks.remove(tick);
+        this.memoryUsage -= state.byteLength;
+        console.debug("[History] removed tick " + tick + ", memory usage: " + this.getUsagePercent() + "%");
         return true;
     }
 
@@ -359,18 +352,11 @@ class History {
     }
 
     indexToTick(index) {
-        let arr = Array.from(this.states.keys()).sort();
-        console.log(arr);
-        return arr[index];
+        return this.ticks.get(index);
     }
 
     tickToIndex(tick) {
-        let arr = Array.from(this.states.keys()).sort();
-        let index = 0;
-        while ((index < arr.length) && (arr[index] <= tick)) {
-            index++;
-        }
-        return index;
+        return this.ticks.lowerBound(tick);
     }    
 
     previous(tick) {
@@ -383,6 +369,14 @@ class History {
 
     get count() {
         return this.states.size;
+    }
+
+    get first() {
+        return this.ticks.first;
+    }
+
+    get last() {
+        return this.ticks.last;
     }
 
     freeMemory(bytes) {
@@ -405,7 +399,11 @@ class History {
             ret = callback(ret, e);
         }
         return ret;        
-    }    
+    }
+
+    getUsagePercent() {
+        return Math.round(this.memoryUsage / this.capacity * 100);
+    }
 }
 
 function reset() {
@@ -465,6 +463,7 @@ function reset() {
     setMark();
 
     // ready to render
+    updateControls();
     changed();
 }
 
@@ -491,11 +490,21 @@ function updateStatus() {
     gui.outTick.value = "Tick: " + world.tick;
 }
 
+function updateControls() {
+    gui.btnPreviousMark.disabled = world.history.empty() || (world.history.first >= world.tick);
+    gui.btnNextMark.disabled = world.history.empty() || (world.history.last <= world.tick);
+    if (world.history.count > 1) {
+        gui.rngTick.max = world.history.count-1;
+        gui.rngTick.value = world.history.tickToIndex(world.tick);
+    } else {
+        // initial position: make slider appear on the right
+        gui.rngTick.max = 1;
+        gui.rngTick.value = 1;
+    }
+}
+
 function setTick(tick) {
     world.tick = tick;
-    gui.btnPreviousMark.disabled = world.history.empty() || (world.history.first >= tick);
-    gui.btnNextMark.disabled = world.history.empty() || (world.history.last <= tick);
-    gui.rngTick.value = world.history.tickToIndex(tick);
 }
 
 function setMark() {
@@ -510,9 +519,15 @@ function setMark() {
         world.history.add(world.tick, getCurrentState());
     }
     // update tick slider
-    // TODO better place?
-    gui.rngTick.max = world.history.count;
+    updateControls();
     return world.tick;
+}
+
+function moveToMark(index) {
+    const tick = world.history.indexToTick(index);
+    setCurrentState(world.history.get(tick));
+    setTick(tick);
+    updateControls();
 }
 
 function previousMark() {
@@ -527,6 +542,7 @@ function previousMark() {
     }
     setCurrentState(state);
     setTick(tick);
+    updateControls();
     return tick;
 }
 
@@ -537,6 +553,7 @@ function nextMark() {
     }
     setCurrentState(state);
     setTick(tick);
+    updateControls();
     return tick;
 }
 
