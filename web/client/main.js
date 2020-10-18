@@ -117,6 +117,11 @@ function initGL() {
 
     gui.outTicksPerSec = document.getElementById("outTicksPerSec");
 
+    gui.rngTick = document.getElementById("rngTick");
+    gui.rngTick.oninput = () => {
+        console.log(gui.rngTick.value, world.history.indexToTick(gui.rngTick.value));
+    }
+
     gui.rngSpeed = document.getElementById("rngSpeed");
     gui.rngSpeed.oninput = () => {
         ticksPerSec = speeds[rngSpeed.value];
@@ -353,6 +358,21 @@ class History {
         return this.states.has(tick);
     }
 
+    indexToTick(index) {
+        let arr = Array.from(this.states.keys()).sort();
+        console.log(arr);
+        return arr[index];
+    }
+
+    tickToIndex(tick) {
+        let arr = Array.from(this.states.keys()).sort();
+        let index = 0;
+        while ((index < arr.length) && (arr[index] <= tick)) {
+            index++;
+        }
+        return index;
+    }    
+
     previous(tick) {
         return this.reduce((ret, e) => ((e[0] < tick) && (!ret || (e[0] > ret[0]))) ? e : ret) || [null, null];
     }
@@ -475,6 +495,7 @@ function setTick(tick) {
     world.tick = tick;
     gui.btnPreviousMark.disabled = world.history.empty() || (world.history.first >= tick);
     gui.btnNextMark.disabled = world.history.empty() || (world.history.last <= tick);
+    gui.rngTick.value = world.history.tickToIndex(tick);
 }
 
 function setMark() {
@@ -488,6 +509,9 @@ function setMark() {
     if (!world.history.has(world.tick)) {
         world.history.add(world.tick, getCurrentState());
     }
+    // update tick slider
+    // TODO better place?
+    gui.rngTick.max = world.history.count;
     return world.tick;
 }
 
