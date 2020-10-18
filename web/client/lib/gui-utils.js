@@ -16,16 +16,22 @@ const guiu = {
 			}
 			// just a function provided?
 			if (typeof config === 'function') {
-				// yes -> use it as default eventhandler
-				element.addEventListener('click', config);
+				// yes -> single event listener
+				addDefaultEventListener(element, config);
 				// done
 				continue;
 			}
-			// has 'events' object?
-			if (config.events) {
-				// yes -> create listener
-				for (const [type, listener] of Object.entries(config.events)) {
-					element.addEventListener(type, listener);
+			// has 'event' object?
+			if (config.event) {
+				// yes -> is it a function?
+				if (typeof config.event === 'function') {
+					// yes -> single listeners
+					addDefaultEventListener(element, config.event);
+				} else {
+					// no -> multiple listeners
+					for (const [type, listener] of Object.entries(config.event)) {
+						element.addEventListener(type, listener);
+					}
 				}
 			}
 			// has 'options' object?
@@ -40,6 +46,18 @@ const guiu = {
 		return gui;
 	}
 
+}
+
+function addDefaultEventListener(element, listener) {
+	const tag = element.tagName.toLowerCase();
+	const type = {
+		input: 'input',
+		button: 'click',
+	}[tag]
+	if (!type) {
+		throw Error("No default event listener for <" + tag + "> element");
+	}
+	element.addEventListener(type, listener);
 }
 
 class Timer {

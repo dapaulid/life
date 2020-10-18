@@ -121,6 +121,9 @@ function initGL() {
         outFPS: {},
         outTicksPerSec: {},        
         outTick: {},
+        // inputs
+        edtRule: {},
+        cbxSize: {},
         // buttons -> event handlers
         btnPause        : pause,
         btnTick         : () => step(1),
@@ -131,27 +134,20 @@ function initGL() {
         btnRandom       : random,
         // position slider
         rngTick: {
-            events: {
-                input: (e) => {
-                    if (!paused) {
-                        pause();
-                    }
-                    moveToMark(e.target.value);
-                },
+            event: (e) => {
+                if (!paused) {
+                    pause();
+                }
+                moveToMark(e.target.value);
             },
             options: { wheelable: true },
         },
         // speed slider
         rngSpeed: {
-            events: {
-                input: updateTicksPerSec,
-            },
+            event: updateTicksPerSec,
             options: { wheelable: true },
         },
     });
-
-    // TODO eliminate
-    //gui.rngSpeed.oninput();
 
     // update framerate every second
     setIntervalAndRun(() => {
@@ -162,7 +158,7 @@ function initGL() {
         framecount = 0;
     }, 1000);
 
-    gui.cbxSize = document.getElementById("cbxSize");
+    // populate world sizes
     const maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     for (let size = 16; size <= maxSize; size <<= 1) {
         const label = (size > 4096 ? "⚠️" : "") + size;
@@ -170,8 +166,6 @@ function initGL() {
     }
     gui.cbxSize.value = Math.min(1024, maxSize);
     
-
-    gui.edtRule = document.getElementById("edtRule");
 
     canvas.addEventListener('dblclick', pause);
 
