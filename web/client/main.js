@@ -28,14 +28,14 @@ var textureSizeLocation;
 var programInfo
 var bufferInfo
 
-let stepInterval;
+let stepTimer = new Timer(step);
 let framecount = 0;
 let tickcount = 0;
 let ticksPerSec = 0;
 
 //let viewProjectionMat;
 let viewPort;
-const gui = {};
+let gui;
 
 // our shaders will be loaded into this object in index.html
 const shaders = {}; 
@@ -114,33 +114,46 @@ function initGL() {
 
     frameBuffer = gl.createFramebuffer();
 
-    gui.outTicksPerSec = document.getElementById("outTicksPerSec");
+    // init GUI
+    gui = guiu.initElements(document, {
+        // outputs
+        outTPS: {},
+        outFPS: {},
+        outTicksPerSec: {},        
+        outTick: {},
+        // buttons -> event handlers
+        btnPause        : pause,
+        btnTick         : () => step(1),
+        btnPreviousMark : previousMark,
+        btnNextMark     : nextMark,
+        btnResetWorld   : reset,
+        btnResetView    : viewPort.reset.bind(viewPort),
+        btnRandom       : random,
+        // position slider
+        rngTick: {
+            events: {
+                input: (e) => {
+                    if (!paused) {
+                        pause();
+                    }
+                    moveToMark(e.target.value);
+                },
+            },
+            options: { wheelable: true },
+        },
+        // speed slider
+        rngSpeed: {
+            events: {
+                input: updateTicksPerSec,
+            },
+            options: { wheelable: true },
+        },
+    });
 
-    gui.rngTick = document.getElementById("rngTick");
-    gui.rngTick.oninput = () => {
-        if (!paused) {
-            pause();
-        }
-        moveToMark(gui.rngTick.value);
-    }
-    makeWheelable(gui.rngTick);
-
-    gui.rngSpeed = document.getElementById("rngSpeed");
-    gui.rngSpeed.oninput = () => {
-        ticksPerSec = speeds[rngSpeed.value];
-        gui.outTicksPerSec.value = ticksPerSec + " tick/s";
-        let interval = 1000 / ticksPerSec;
-        if (stepInterval) {
-            clearInterval(stepInterval);
-        }
-        stepInterval = setInterval(step, interval);
-    }
-    makeWheelable(gui.rngSpeed);
-    gui.rngSpeed.oninput();
+    // TODO eliminate
+    //gui.rngSpeed.oninput();
 
     // update framerate every second
-    gui.outFPS = document.getElementById("outFPS");
-    gui.outTPS = document.getElementById("outTPS");
     setIntervalAndRun(() => {
         gui.outTPS.value = "TPS: " + tickcount;
         gui.outTPS.classList.toggle("bad", (tickcount < ticksPerSec) && !paused);
@@ -148,27 +161,6 @@ function initGL() {
         gui.outFPS.value = "FPS: " + framecount;
         framecount = 0;
     }, 1000);
-
-    gui.btnResetView = document.getElementById("btnResetView");
-    gui.btnResetView.onclick = viewPort.reset.bind(viewPort);
-
-    gui.btnPause = document.getElementById("btnPause");
-    gui.btnPause.onclick = pause;
-
-    gui.btnTick = document.getElementById("btnTick");
-    gui.btnTick.onclick = () => {
-        step(1);
-    };
-    gui.btnTick.disabled = true;
-
-    gui.btnPreviousMark = document.getElementById("btnPreviousMark");
-    gui.btnPreviousMark.onclick = previousMark;
-
-    gui.btnNextMark = document.getElementById("btnNextMark");
-    gui.btnNextMark.onclick = nextMark;    
-
-    gui.btnResetWorld = document.getElementById("btnResetWorld");
-    gui.btnResetWorld.onclick = reset;
 
     gui.cbxSize = document.getElementById("cbxSize");
     const maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
@@ -180,11 +172,6 @@ function initGL() {
     
 
     gui.edtRule = document.getElementById("edtRule");
-
-    gui.btnRandom = document.getElementById("btnRandom");
-    gui.btnRandom.onclick = random;
-
-    gui.outTick = document.getElementById("outTick");
 
     canvas.addEventListener('dblclick', pause);
 
@@ -215,6 +202,7 @@ function initGL() {
 
     reset();
     setIntervalAndRun(updateStatus, 100);
+    stepTimer.start();
 }
 
 const alive = [0.5,1.0,0.7,1.0]
@@ -310,16 +298,13 @@ function step(ticks = 1) {
 let paused = false;
 function pause() {
     if (paused) {
-        gui.rngSpeed.oninput();
-        gui.btnPause.className = "button icon-pause";
-        gui.btnTick.disabled = true;
+        stepTimer.start();
         paused = false;
     } else {
-        clearInterval(stepInterval);
-        gui.btnPause.className = "button icon-play";
-        gui.btnTick.disabled = false;        
+        stepTimer.stop();
         paused = true;
     }
+    updateControls();
 }
 
 class History {
@@ -486,6 +471,7 @@ function reset() {
 
     // ready to render
     updateControls();
+    updateTicksPerSec();
     changed();
 }
 
@@ -512,7 +498,16 @@ function updateStatus() {
     gui.outTick.value = world.tick;
 }
 
+function updateTicksPerSec() {
+    ticksPerSec = speeds[gui.rngSpeed.value];
+    gui.outTicksPerSec.value = ticksPerSec + " tick/s";
+    stepTimer.setInterval(1000 / ticksPerSec);
+}
+
 function updateControls() {
+    // update button states
+    gui.btnPause.className = paused ? "button icon-play" : "button icon-pause";
+    gui.btnTick.disabled = !paused;    
     gui.btnPreviousMark.disabled = world.history.empty() || (world.history.first >= world.tick);
     gui.btnNextMark.disabled = world.history.empty() || (world.history.last <= world.tick);
     if (world.history.count > 1) {
@@ -586,18 +581,6 @@ function nextMark() {
 function setIntervalAndRun(handler, timeout) {
     handler();
     return setInterval(handler, timeout)
-}
-
-function makeWheelable(element) {
-    element.addEventListener("wheel", (e) => {
-        if (e.deltaY < 0) {
-            e.target.value++;
-            e.target.oninput();
-        } else if (e.deltaY > 0) {
-            e.target.value--;
-            e.target.oninput();
-        }
-    }, { passive: true });
 }
 
 function setUrlParams(params) {
