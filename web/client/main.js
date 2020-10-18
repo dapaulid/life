@@ -28,10 +28,14 @@ var textureSizeLocation;
 var programInfo
 var bufferInfo
 
-let stepTimer = new Timer(step);
 let framecount = 0;
 let tickcount = 0;
 let ticksPerSec = 0;
+
+let stepTimer = new Timer(() => {
+    const ticksPerStep = Math.ceil(ticksPerSec / 1000 * stepTimer.interval);
+    step(ticksPerStep);
+});
 
 //let viewProjectionMat;
 let viewPort;
@@ -495,7 +499,7 @@ function updateStatus() {
 function updateTicksPerSec() {
     ticksPerSec = speeds[gui.rngSpeed.value];
     gui.outTicksPerSec.value = ticksPerSec + " tick/s";
-    stepTimer.setInterval(1000 / ticksPerSec);
+    stepTimer.setInterval(Math.max(1000 / ticksPerSec, 50));
 }
 
 function updateControls() {
