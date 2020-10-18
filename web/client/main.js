@@ -487,7 +487,7 @@ function random() {
 }
 
 function updateStatus() {
-    gui.outTick.value = "Tick: " + world.tick;
+    gui.outTick.value = world.tick;
 }
 
 function updateControls() {

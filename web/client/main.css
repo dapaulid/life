@@ -35,3 +35,8 @@ label, output {
     margin: 4px;
     color: white;
 }
+
+.numeric {
+    text-align: right;
+    min-width: 32px;
+}
