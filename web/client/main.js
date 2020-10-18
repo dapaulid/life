@@ -143,6 +143,7 @@ function initGL() {
     gui.outTPS = document.getElementById("outTPS");
     setIntervalAndRun(() => {
         gui.outTPS.value = "TPS: " + tickcount;
+        gui.outTPS.classList.toggle("bad", (tickcount < ticksPerSec) && !paused);
         tickcount = 0;        
         gui.outFPS.value = "FPS: " + framecount;
         framecount = 0;

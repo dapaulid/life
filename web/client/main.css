@@ -20,6 +20,7 @@ html, body {
 }
 .header {
     justify-content: space-evenly;
+    font-weight: bold;
 }
 .content {
     flex: auto;
@@ -39,4 +40,8 @@ label, output {
 .numeric {
     text-align: right;
     min-width: 32px;
+}
+
+.bad {
+    color: red;
 }
