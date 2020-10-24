@@ -441,6 +441,7 @@ function reset() {
     // update world properties from GUI
     world.width = gui.cbxSize.value;
     world.height = gui.cbxSize.value;
+    world.rule = Rule.decode(gui.edtRule.value);
     world.history = new History(1024*1024*100);
     world.tempLastMark = null;
 
@@ -456,7 +457,7 @@ function reset() {
     rgba.fill(stateColors[0]);
     rgba[rgba.length/2+world.width/2] = stateColors[1];
 
-    rgba = makeRandomArray(rgba);
+    //rgba = makeRandomArray(rgba);
 
      // empty texture 
     lastState = twgl.createTexture(gl, {

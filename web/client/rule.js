@@ -61,10 +61,14 @@ class Rule {
 	}
 
 	static random(states) {
-		const n = Math.pow(states, NEIGH_SIZE);
+		if (states != 2) {
+			throw Error("Only 2 states supported so far");
+		}
+		const n = states**NEIGH_SIZE;
+		const t = Math.random();
 		let array = []
 		for (let i = 0; i < n; i++) {
-			array[i] = Math.floor(Math.random() * states);
+			array[i] = Math.random() <= t ? 0 : 1;
 		}
 		return new Rule(array);
 	}
