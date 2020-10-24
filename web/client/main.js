@@ -190,7 +190,11 @@ function initGL() {
         // handle key
         switch (e.code) {
         case 'Space': 
-            pause();
+            if (e.ctrlKey) {
+                step(1);
+            } else {
+                pause();
+            }
             break;
         default:
             // ignore
