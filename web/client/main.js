@@ -8,6 +8,25 @@ var canvas;
 var currentState;
 var lastState;
 var frameBuffer;
+var ruleTex;
+const alive = [0.5,1.0,0.7,1.0]
+const stateColors = [
+    color(0x00, 0x00, 0x00),
+    color(0x80, 0xff, 0xb3),
+]
+
+const conway = Rule.generate(2, (cell, counts) => {
+    // 1. Any live cell with two or three live neighbours survives.
+    if ((cell == 1) && ((counts[1] == 2) || (counts[1] == 3))) {
+        return 1;
+    }
+    // 2. Any dead cell with three live neighbours becomes a live cell.
+    if ((cell == 0) && (counts[1] == 3)) {
+        return 1;
+    }
+    // 3. All other live cells die in the next generation. Similarly, all other dead cells stay dead.
+    return 0;
+});
 
 const world = {
     width: 64,
@@ -15,6 +34,7 @@ const world = {
     tick: 0,
     history: null,
     tempLastMark: null,
+    rule: conway,
 }
 
 const speeds = [
@@ -24,6 +44,9 @@ const speeds = [
 var flipYLocation;
 var tickLocation;
 var textureSizeLocation;
+
+var imageLoc;
+var ruleLoc;
 
 var programInfo
 var bufferInfo
@@ -49,19 +72,6 @@ const glsl = x => x.join('\n');
 window.onload = initGL;
 
 const rule = Rule.random(2); //new Rule([0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1])
-
-const conway = Rule.generate(2, (cell, counts) => {
-    // 1. Any live cell with two or three live neighbours survives.
-    if ((cell == 1) && ((counts[1] == 2) || (counts[1] == 3))) {
-        return 1;
-    }
-    // 2. Any dead cell with three live neighbours becomes a live cell.
-    if ((cell == 0) && (counts[1] == 3)) {
-        return 1;
-    }
-    // 3. All other live cells die in the next generation. Similarly, all other dead cells stay dead.
-    return 0;
-});
 
 function initGL() {
 
@@ -111,6 +121,9 @@ function initGL() {
     //flip y
     flipYLocation = gl.getUniformLocation(program, "u_flipY");
     tickLocation = gl.getUniformLocation(program, "u_tick");
+
+    imageLoc = gl.getUniformLocation(program, "u_image");
+    ruleLoc = gl.getUniformLocation(program, "u_rule");
 
     textureSizeLocation = gl.getUniformLocation(program, "u_textureSize");
 
@@ -203,21 +216,11 @@ function initGL() {
     stepTimer.start();
 }
 
-const alive = [0.5,1.0,0.7,1.0]
-
 function makeRandomArray(rgba){
-    var numPixels = rgba.length/4;
     var probability = 0.15;
-    for (var i=0;i<numPixels;i++) {
-        var ii = i * 4;
+    for (var i=0;i<rgba.length;i++) {
         var state = Math.random() < probability ? 1 : 0;
-        if (state) {
-            rgba[ii] = alive[0] * 255;
-            rgba[ii+1] = alive[1] * 255;
-            rgba[ii+2] = alive[2] * 255;
-        }
-        //rgba[ii + 1] = rgba[ii + 2] = state ? 255 : 0;
-        rgba[ii + 3] = 255;
+        rgba[i] = stateColors[state];
     }
     return rgba;
 }
@@ -250,7 +253,16 @@ function render(){
 
     //draw to canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    
+    //gl.bindTexture(gl.TEXTURE_2D, currentState);
+    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, currentState);
+    gl.uniform1i(imageLoc, 0); 
+
+    //gl.activeTexture(gl.TEXTURE3);
+    //gl.bindTexture(gl.TEXTURE_2D, ruleTex);
+    //gl.uniform1i(ruleLoc, 3); 
+
     twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
 }
 
@@ -265,13 +277,26 @@ function step(ticks = 1) {
         u_matrix: m3.identity(),
     });
 
+    /*
+    twgl.setUniforms(programInfo, {
+        u_rule: 0,
+    });*/
+    
     // lastState will receive output from fragment shader
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
     
     for (let i = 0; i < ticks; i++) {
 
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lastState, 0);
+
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, currentState);
+        gl.uniform1i(imageLoc, 0); 
+
+        gl.activeTexture(gl.TEXTURE3);
+        gl.bindTexture(gl.TEXTURE_2D, ruleTex);
+        gl.uniform1i(ruleLoc, 3); 
+
         twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
 
         // lastState is now our new currentState
@@ -427,18 +452,9 @@ function reset() {
     // set the size of the texture
     gl.uniform2f(textureSizeLocation, world.width, world.height);
 
-    var rgba = new Uint8Array(world.width*world.height*4);
-    for (var i=0;i<rgba.length/4;i++) {
-        var ii = i * 4;
-        rgba[ii] = 0
-        rgba[ii+1] = 0
-        rgba[ii+2] = 0
-        rgba[ii+3] = 255;
-    }    
-    const m = (Math.floor(rgba.length/4)/2)*4;
-    rgba[m] = alive[0] * 255;
-    rgba[m+1] = alive[1] * 255;
-    rgba[m+2] = alive[2] * 255;
+    var rgba = new Uint32Array(world.width*world.height);
+    rgba.fill(stateColors[0]);
+    rgba[rgba.length/2+world.width/2] = stateColors[1];
 
     rgba = makeRandomArray(rgba);
 
@@ -453,13 +469,32 @@ function reset() {
     });
     // initial state
     currentState = twgl.createTexture(gl, {
-        src: rgba,
+        src: new Uint8Array(rgba.buffer),
         width: world.width,
         height: world.height,
         min: gl.NEAREST,
         mag: gl.NEAREST,
         wrap: gl.REPEAT, // needs power of 2
     });
+
+    gl.activeTexture(gl.TEXTURE3)
+    const tex = new Uint32Array(512);
+    for (let i = 1; i < world.rule.length; i++) {
+        tex[i] = color(world.rule.array[i] * 0xff, 0x00, 0x00);
+    }
+    ////tex.fill(color(0xff, 0x00, 0x00));
+    //tex.fill(color(0xff, 0x00, 0x00), 0, 255);
+    //tex[255] = color(0x00, 0x00, 0xff);
+    //tex.fill(color(0x00, 0xff, 0x00), 256, 512);
+    ruleTex = twgl.createTexture(gl, {
+        src: new Uint8Array(tex.buffer),
+        width: tex.length,
+        height: 1,
+        min: gl.NEAREST,
+        mag: gl.NEAREST,
+        wrap: gl.CLAMP_TO_EDGE, // needs power of 2
+    });
+    gl.activeTexture(gl.TEXTURE0)
 
     // big bang conditions
     setTick(0);
@@ -575,6 +610,10 @@ function nextMark() {
 //------------------------------------------------------------------------------
 // helpers
 //------------------------------------------------------------------------------
+
+function color(r, g, b, a = 0xff) {
+    return r | (g << 8) | (b << 16) | (a << 24);
+}
 
 function setIntervalAndRun(handler, timeout) {
     handler();

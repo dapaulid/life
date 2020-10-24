@@ -1,8 +1,13 @@
 shaders["2d-fragment"] = glsl` // fragment shader
 
+#define STATES 2
+#define NEIGH 9
+#define RULESIZE 512
+
 precision mediump float;
 
 uniform sampler2D u_image;//texture array
+uniform sampler2D u_rule;
 
 varying vec2 v_texCoord;
 uniform vec2 u_textureSize;
@@ -15,6 +20,9 @@ vec4 blue = vec4(0.,0.,1.,1.);
 
 void main() {
 
+	//gl_FragColor = texture2D(u_rule, vec2((float(511) + 0.5) / float(RULESIZE), 0.5));
+	//return;
+
 	vec4 me = texture2D(u_image, v_texCoord);
 	if (!u_tick) {
 		gl_FragColor = me;
@@ -25,15 +33,25 @@ void main() {
 
 	vec4 rawTextureData = texture2D(u_image, v_texCoord);
 
-	float sum = 0.;
-	for (int i=-1;i<2;i++){
-		for (int j=-1;j<2;j++){
-			if (i == 0 && j == 0) continue;
-			vec2 neighborCoord = v_texCoord + vec2(onePixel.x*float(i), onePixel.y*float(j));
-			sum += texture2D(u_image, neighborCoord).g;
-		}
+	highp int idx =  int(0.5 + texture2D(u_image, v_texCoord).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 1.0,  0.0)).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 1.0,  1.0)).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 0.0,  1.0)).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2(-1.0,  1.0)).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2(-1.0,  0.0)).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2(-1.0, -1.0)).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 0.0, -1.0)).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 1.0, -1.0)).g);
+
+	lowp int newState = int(0.5 + texture2D(u_rule, vec2((float(idx) + 0.5) / float(RULESIZE), 0.5)).r);
+
+	if (newState == 1) {
+		gl_FragColor = live;
+	} else {
+		gl_FragColor = dead;
 	}
 
+	/*
 	if (me.g <= 0.1) {
 		if ((sum >= 2.9) && (sum <= 3.1)) {
 			gl_FragColor = live;
@@ -48,7 +66,7 @@ void main() {
 		} else {
 			gl_FragColor = blue;
 		}
-	}
+	}*/
 
 }
 

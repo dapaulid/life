@@ -104,6 +104,10 @@ class Rule {
 		}
 		return new Rule(array);
 	}
+
+	get length() {
+		return this.array.length;
+	}
 }
 
 function getRuleSize(states) {
