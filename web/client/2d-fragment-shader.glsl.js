@@ -29,26 +29,31 @@ void main() {
 		return;
 	}
 
-	vec2 onePixel = vec2(1.0, 1.0)/u_textureSize;
+	vec2 px = vec2(1.0, 1.0)/u_textureSize;
 
-	vec4 rawTextureData = texture2D(u_image, v_texCoord);
+	highp int idx =    int(0.5 + texture2D(u_image, v_texCoord + vec2( 1.0, -1.0)*px).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + vec2( 0.0, -1.0)*px).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + vec2(-1.0, -1.0)*px).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + vec2(-1.0,  0.0)*px).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + vec2(-1.0,  1.0)*px).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + vec2( 0.0,  1.0)*px).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + vec2( 1.0,  1.0)*px).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + vec2( 1.0,  0.0)*px).g);
+	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord).g);
 
-	highp int idx =  int(0.5 + texture2D(u_image, v_texCoord).g);
-	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 1.0,  0.0)).g);
-	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 1.0,  1.0)).g);
-	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 0.0,  1.0)).g);
-	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2(-1.0,  1.0)).g);
-	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2(-1.0,  0.0)).g);
-	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2(-1.0, -1.0)).g);
-	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 0.0, -1.0)).g);
-	idx = idx*STATES + int(0.5 + texture2D(u_image, v_texCoord + onePixel*vec2( 1.0, -1.0)).g);
+	if (idx < 0 || idx > 511) {
+		gl_FragColor = blue;
+		return;
+	}
 
 	lowp int newState = int(0.5 + texture2D(u_rule, vec2((float(idx) + 0.5) / float(RULESIZE), 0.5)).r);
 
 	if (newState == 1) {
 		gl_FragColor = live;
-	} else {
+	} else if (newState == 0) {
 		gl_FragColor = dead;
+	} else {
+		gl_FragColor = blue;
 	}
 
 	/*

@@ -24,7 +24,7 @@ class Rule {
 
 	encode() {
 		const radix = BigInt(this.states);
-		let num = this.array.reduce((acc, x) => acc * radix + BigInt(x), BigInt(0));
+		let num = this.array.reduceRight((acc, x) => acc * radix + BigInt(x), BigInt(0));
 		const len = getRuleSize(this.states);
 		let encoded = "";
 		for (let i = 0; i < len; i++) {
@@ -53,7 +53,7 @@ class Rule {
 		const n = Math.pow(states, NEIGH_SIZE);
 		let array = [];
 		for (let i = 0; i < n; i++) {
-			array[n-i-1] = Number(num % radix);
+			array[i] = Number(num % radix);
 			num /= radix;
 		}
 		return new Rule(array);

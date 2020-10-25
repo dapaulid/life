@@ -484,7 +484,7 @@ function reset() {
 
     gl.activeTexture(gl.TEXTURE3)
     const tex = new Uint32Array(512);
-    for (let i = 1; i < world.rule.length; i++) {
+    for (let i = 0; i < world.rule.length; i++) {
         tex[i] = color(world.rule.array[i] * 0xff, 0x00, 0x00);
     }
     ////tex.fill(color(0xff, 0x00, 0x00));
