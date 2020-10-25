@@ -148,6 +148,7 @@ function initGL() {
         btnNextMark     : nextMark,
         btnResetWorld   : reset,
         btnResetView    : viewPort.reset.bind(viewPort),
+        btnMutate       : mutate,
         btnRandom       : random,
         // position slider
         rngTick: {
@@ -529,6 +530,13 @@ function getCurrentState() {
 
 function random() {
     gui.edtRule.value = Rule.random(2).encode();
+    reset();
+}
+
+function mutate() {
+    const rule = Rule.decode(gui.edtRule.value);
+    rule.mutate();
+    gui.edtRule.value = rule.encode();
     reset();
 }
 

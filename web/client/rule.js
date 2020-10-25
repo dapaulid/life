@@ -22,6 +22,11 @@ class Rule {
 		this.states = Math.pow(this.array.length, 1/NEIGH_SIZE);
 	}
 
+	mutate() {
+		const i = Math.round(Math.random() * this.array.length);
+		this.array[i] = (this.array[i] + 1) % this.states;
+	}
+
 	encode() {
 		const radix = BigInt(this.states);
 		let num = this.array.reduceRight((acc, x) => acc * radix + BigInt(x), BigInt(0));

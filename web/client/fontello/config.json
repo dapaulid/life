@@ -27,7 +27,7 @@
     {
       "uid": "c47efa0e3e74f6ba4c2562c1258fff1f",
       "css": "to-end",
-      "code": 59394,
+      "code": 59234,
       "src": "fontawesome"
     },
     {
@@ -57,13 +57,19 @@
     {
       "uid": "7ea35a8fc7e676c78e99cab2d4bc8653",
       "css": "to-end-alt",
-      "code": 59234,
+      "code": 59394,
       "src": "fontawesome"
     },
     {
       "uid": "6b5450145d620234f07ffcbfbb671074",
       "css": "to-start-alt",
       "code": 59235,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "ff70f7b3228702e0d590e60ed3b90bea",
+      "css": "magic",
+      "code": 61648,
       "src": "fontawesome"
     }
   ]
