@@ -142,6 +142,7 @@ function initGL() {
         cbxFade         : fade, 
         edtRule: {},
         cbxSize: {},
+        cbxInitial: {},
         // buttons -> event handlers
         btnPause        : pause,
         btnTick         : () => step(1),
@@ -465,13 +466,19 @@ function reset() {
     // set the size of the texture
     gl.uniform2f(textureSizeLocation, world.width, world.height);
 
-    var rgba = new Uint32Array(world.width*world.height);
-    rgba.fill(stateColors[0]);
-    rgba[rgba.length/2+world.width/2] = stateColors[1];
+    // build initial state
+    let init = new Uint32Array(world.width * world.height);
+    if (cbxInitial.value == "bigbang") {
+        init.fill(stateColors[0]);
+        init[init.length/2 + world.width/2] = stateColors[1];
+    } else if (cbxInitial.value == "random") {
+        const probability = 0.15;
+        init = init.map(() => stateColors[Math.random() < probability ? 1 : 0])
+    } else {
+        throw Error("Invalid initial state: " + cbxInitial.value);
+    }
 
-    //rgba = makeRandomArray(rgba);
-
-     // empty texture 
+    // empty texture 
     lastState = twgl.createTexture(gl, {
         src: null,
         width: world.width,
@@ -482,7 +489,7 @@ function reset() {
     });
     // initial state
     currentState = twgl.createTexture(gl, {
-        src: new Uint8Array(rgba.buffer),
+        src: new Uint8Array(init.buffer),
         width: world.width,
         height: world.height,
         min: gl.NEAREST,
