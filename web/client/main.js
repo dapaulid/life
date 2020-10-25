@@ -29,8 +29,8 @@ const conway = Rule.generate(2, (cell, counts) => {
 });
 
 const world = {
-    width: 64,
-    height: 64,
+    width: 256,
+    height: 256,
     tick: 0,
     history: null,
     tempLastMark: null,
@@ -139,6 +139,7 @@ function initGL() {
         outTicksPerSec: {},        
         outTick: {},
         // inputs
+        cbxFade         : fade, 
         edtRule: {},
         cbxSize: {},
         // buttons -> event handlers
@@ -333,6 +334,12 @@ function pause() {
         paused = true;
     }
     updateControls();
+}
+
+function fade() {
+    twgl.setUniforms(programInfo, {
+        u_fade: gui.cbxFade.checked
+    });
 }
 
 class History {
