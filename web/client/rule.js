@@ -70,6 +70,8 @@ class Rule {
 		for (let i = 0; i < n; i++) {
 			array[i] = Math.random() <= t ? 0 : 1;
 		}
+		// filter out "flicker" worlds
+		array[0] = 0;
 		return new Rule(array);
 	}
 
