@@ -88,7 +88,7 @@ function initGL() {
 
     // setup a GLSL program
     programInfo = twgl.createProgramInfo(gl, 
-        [shaders["2d-vertex"], shaders["2d-fragment"]],
+        [shaders["ca2d-vert"], shaders["ca2d-frag"]],
         null, null,
         err => { throw "TWGL error:\n" + err }
     );
@@ -106,7 +106,7 @@ function initGL() {
                 -1.0,  1.0,  1.0, -1.0,  1.0,  1.0,
             ]
         },
-        a_texCoord: { 
+        a_cellCoord: { 
             numComponents: 2, 
             data: [
                  0.0,  0.0,  1.0,  0.0,  0.0,  1.0,
@@ -122,10 +122,10 @@ function initGL() {
     flipYLocation = gl.getUniformLocation(program, "u_flipY");
     tickLocation = gl.getUniformLocation(program, "u_tick");
 
-    imageLoc = gl.getUniformLocation(program, "u_image");
+    imageLoc = gl.getUniformLocation(program, "u_world");
     ruleLoc = gl.getUniformLocation(program, "u_rule");
 
-    textureSizeLocation = gl.getUniformLocation(program, "u_textureSize");
+    textureSizeLocation = gl.getUniformLocation(program, "u_worldSize");
 
     viewPort = new ViewportControl(canvas, changed)
 
@@ -497,15 +497,16 @@ function reset() {
         wrap: gl.REPEAT, // needs power of 2
     });
 
+    twgl.setUniforms(programInfo, {
+        u_states  : world.rule.states,
+        u_ruleSize: world.rule.length,
+    });
+
     gl.activeTexture(gl.TEXTURE3)
     const tex = new Uint32Array(512);
     for (let i = 0; i < world.rule.length; i++) {
-        tex[i] = color(world.rule.array[i] * 0xff, 0x00, 0x00);
+        tex[i] = stateColors[world.rule.array[i]];
     }
-    ////tex.fill(color(0xff, 0x00, 0x00));
-    //tex.fill(color(0xff, 0x00, 0x00), 0, 255);
-    //tex[255] = color(0x00, 0x00, 0xff);
-    //tex.fill(color(0x00, 0xff, 0x00), 256, 512);
     ruleTex = twgl.createTexture(gl, {
         src: new Uint8Array(tex.buffer),
         width: tex.length,
