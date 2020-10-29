@@ -38,7 +38,9 @@ const glx = {
 			if (!u) {
 				throw Error("unknown uniform: " + name);
 			}
-			u.setter(uniforms[name]);
+			const value = uniforms[name];
+			u.setter(value);
+			
 		}
 	},
 
@@ -46,21 +48,21 @@ const glx = {
 
 function createSetter(gl, u) {
 	switch (u.type) {
-		case gl.FLOAT          : return gl.uniform1f.bind(gl, u.location);
-		case gl.FLOAT_VEC2     : return gl.uniform2f.bind(gl, u.location);
-		case gl.FLOAT_VEC3     : return gl.uniform3f.bind(gl, u.location);
-		case gl.FLOAT_VEC4     : return gl.uniform4f.bind(gl, u.location);
-		case gl.INT            : return gl.uniform1i.bind(gl, u.location);
-		case gl.INT_VEC2       : return gl.uniform2i.bind(gl, u.location);
-		case gl.INT_VEC3       : return gl.uniform3i.bind(gl, u.location); 
-		case gl.INT_VEC4       : return gl.uniform4i.bind(gl, u.location); 
-		case gl.BOOL           : return gl.uniform1i.bind(gl, u.location);
-		case gl.BOOL_VEC2      : return gl.uniform2i.bind(gl, u.location);
-		case gl.BOOL_VEC3      : return gl.uniform3i.bind(gl, u.location);
-		case gl.BOOL_VEC4      : return gl.uniform4i.bind(gl, u.location);
-		case gl.FLOAT_MAT2     : return gl.uniformMatrix2fv.bind(gl, u.location, false);
-		case gl.FLOAT_MAT3     : return gl.uniformMatrix3fv.bind(gl, u.location, false);
-		case gl.FLOAT_MAT4     : return gl.uniformMatrix4fv.bind(gl, u.location, false);
+		case gl.FLOAT          : return (value) => gl.uniform1f(u.location, value);
+		case gl.FLOAT_VEC2     : return (value) => gl.uniform2f(u.location, ...value);
+		case gl.FLOAT_VEC3     : return (value) => gl.uniform3f(u.location, ...value);
+		case gl.FLOAT_VEC4     : return (value) => gl.uniform4f(u.location, ...value);
+		case gl.INT            : return (value) => gl.uniform1i(u.location, value);
+		case gl.INT_VEC2       : return (value) => gl.uniform12(u.location, ...value);
+		case gl.INT_VEC3       : return (value) => gl.uniform13(u.location, ...value);
+		case gl.INT_VEC4       : return (value) => gl.uniform14(u.location, ...value);
+		case gl.BOOL           : return (value) => gl.uniform1i(u.location, value);
+		case gl.BOOL_VEC2      : return (value) => gl.uniform12(u.location, ...value);
+		case gl.BOOL_VEC3      : return (value) => gl.uniform13(u.location, ...value);
+		case gl.BOOL_VEC4      : return (value) => gl.uniform14(u.location, ...value);
+		case gl.FLOAT_MAT2     : return (value) => gl.uniformMatrix2fv(u.location, false, new Float32Array(value));
+		case gl.FLOAT_MAT3     : return (value) => gl.uniformMatrix3fv(u.location, false, new Float32Array(value));
+		case gl.FLOAT_MAT4     : return (value) => gl.uniformMatrix4fv(u.location, false, new Float32Array(value));
 		case gl.SAMPLER_2D     : 
 			return function(texture) {
 				gl.uniform1i(u.location, u.unit);
