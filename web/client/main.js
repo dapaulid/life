@@ -446,6 +446,9 @@ function reset() {
     if (cbxInitial.value == "bigbang") {
         init.fill(stateColors[0]);
         init[init.length/2 + world.width/2] = stateColors[1];
+    } else if (cbxInitial.value == "invbang") {
+        init.fill(stateColors[1]);
+        init[init.length/2 + world.width/2] = stateColors[0];
     } else if (cbxInitial.value == "random") {
         const probability = 0.15;
         init = init.map(() => stateColors[Math.random() < probability ? 1 : 0])
