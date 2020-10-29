@@ -8,7 +8,7 @@ var canvas;
 var currentState;
 var lastState;
 var frameBuffer;
-var ruleTex;
+
 const alive = [0.5,1.0,0.7,1.0]
 const stateColors = [
     color(0x00, 0x00, 0x00),
@@ -51,12 +51,7 @@ const speeds = [
     1, 2, 5, 10, 25, 50, 100, 250, 500, 1000
 ];
 
-var flipYLocation;
-var tickLocation;
 var textureSizeLocation;
-
-var imageLoc;
-var ruleLoc;
 
 var programInfo
 var bufferInfo
@@ -106,6 +101,8 @@ function initGL() {
 
     gl.useProgram(program);
 
+    glx.initState(gl, program);
+
 
     // vertex shader attributes
     const arrays = {
@@ -127,13 +124,6 @@ function initGL() {
     bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
     twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
 
-
-    //flip y
-    flipYLocation = gl.getUniformLocation(program, "u_flipY");
-    tickLocation = gl.getUniformLocation(program, "u_tick");
-
-    imageLoc = gl.getUniformLocation(program, "u_world");
-    ruleLoc = gl.getUniformLocation(program, "u_rule");
 
     textureSizeLocation = gl.getUniformLocation(program, "u_worldSize");
 
@@ -261,25 +251,14 @@ function render(){
 
     gl.viewport(0, 0, canvas.width, canvas.height);
 
-    gl.uniform1f(flipYLocation, -1);  // need to y flip for canvas
-    gl.uniform1f(tickLocation, false);
-
-    twgl.setUniforms(programInfo, {
-        u_matrix: viewPort.matrix,
+    glx.setUniforms(gl, {
+        u_tick    : false,
+        u_matrix  : viewPort.matrix,
+        u_world   : currentState,
     });        
 
     //draw to canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    
-    //gl.bindTexture(gl.TEXTURE_2D, currentState);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, currentState);
-    gl.uniform1i(imageLoc, 0); 
-
-    //gl.activeTexture(gl.TEXTURE3);
-    //gl.bindTexture(gl.TEXTURE_2D, ruleTex);
-    //gl.uniform1i(ruleLoc, 3); 
-
     twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
 }
 
@@ -287,33 +266,19 @@ function step(ticks = 1) {
 
     gl.viewport(0, 0, world.width, world.height);
 
-    // don't y flip images while drawing to the textures
-    gl.uniform1f(flipYLocation, 1);
-    gl.uniform1f(tickLocation, true);
-    twgl.setUniforms(programInfo, {
-        u_matrix: m3.identity(),
+    glx.setUniforms(gl, {
+        u_tick    : true,
+        u_matrix  : m3.identity(),
+        u_world   : currentState,
     });
 
-    /*
-    twgl.setUniforms(programInfo, {
-        u_rule: 0,
-    });*/
-    
     // lastState will receive output from fragment shader
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
     
     for (let i = 0; i < ticks; i++) {
 
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lastState, 0);
-
-        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, currentState);
-        gl.uniform1i(imageLoc, 0); 
-
-        gl.activeTexture(gl.TEXTURE3);
-        gl.bindTexture(gl.TEXTURE_2D, ruleTex);
-        gl.uniform1i(ruleLoc, 3); 
-
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lastState, 0);
         twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
 
         // lastState is now our new currentState
@@ -474,7 +439,7 @@ function reset() {
     });
 
     // set the size of the texture
-    gl.uniform2f(textureSizeLocation, world.width, world.height);
+    //gl.uniform2f(textureSizeLocation, world.width, world.height);
 
     // build initial state
     let init = new Uint32Array(world.width * world.height);
@@ -507,17 +472,17 @@ function reset() {
         wrap: gl.REPEAT, // needs power of 2
     });
 
-    twgl.setUniforms(programInfo, {
+    glx.setUniforms(gl, {
         u_states  : world.rule.states,
         u_ruleSize: world.rule.length,
+        u_worldSize: [world.width, world.height],
     });
 
-    gl.activeTexture(gl.TEXTURE3)
     const tex = new Uint32Array(512);
     for (let i = 0; i < world.rule.length; i++) {
         tex[i] = stateColors[world.rule.array[i]];
     }
-    ruleTex = twgl.createTexture(gl, {
+    const ruleTex = twgl.createTexture(gl, {
         src: new Uint8Array(tex.buffer),
         width: tex.length,
         height: 1,
@@ -525,7 +490,9 @@ function reset() {
         mag: gl.NEAREST,
         wrap: gl.CLAMP_TO_EDGE, // needs power of 2
     });
-    gl.activeTexture(gl.TEXTURE0)
+    glx.setUniforms(gl, {
+        u_rule: ruleTex,
+    });
 
     // big bang conditions
     setTick(0);
