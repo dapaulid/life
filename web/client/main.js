@@ -80,6 +80,9 @@ const rule = Rule.random(2); //new Rule([0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 
 
 function initGL() {
 
+    // redirect console output
+    guiu.redirectConsole("console");
+
     // Get A WebGL context
     canvas = document.getElementById("glcanvas");
 

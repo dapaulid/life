@@ -31,10 +31,33 @@ html, body {
 .footer {
     justify-content: left;
 }
+.overlay {
+    color: white;
+    z-index: 10;
+    position: absolute;
+    left: 0; top: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    padding: 8px;
+}
 
 label, output {
     margin: 4px;
     color: white;
+}
+
+code {
+    display: block;
+    white-space: pre-wrap   
+}
+
+.console-error {
+    color: red;
+}
+.console-warn {
+    color: yellow;
+}
+.console-info {
+    color: blue;
 }
 
 .numeric {

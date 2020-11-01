@@ -44,6 +44,39 @@ const guiu = {
 			}
 		}
 		return gui;
+	},
+
+	redirectConsole: function(elementId) {
+		const element = document.getElementById(elementId);
+		const methods = {
+			error: { verb: 'error', prefix: '[E] ' },
+			warn : { verb: 'warn',  prefix: '[!] ' },
+			info : { verb: 'info',  prefix: '[i] ' },
+			log  : { verb: 'log',   prefix: '[.] ' },			
+		}
+		function output(method, ...args) {
+			const values = args.map((arg) => {
+				if (typeof arg === 'object') {
+					return JSON.stringify(arg, null, 2);
+				}
+				return arg;
+			});
+			const msg = document.createElement('code');
+			msg.classList.add('console-' + method.verb);
+			msg.textContent = method.prefix + values.join(' ');
+			element.appendChild(msg);
+			element.hidden = false;
+		}
+		for (let method of Object.values(methods)) {
+			const wrapped = console[method.verb];
+			console[method.verb] = (...args) => {
+				wrapped(...args);
+				output(method, ...args);
+			};
+		}
+		window.addEventListener('error', (e) => {
+			output(methods.error, e.filename+':'+e.lineno+': '+e.message);
+		});
 	}
 
 }

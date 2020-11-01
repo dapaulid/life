@@ -23,8 +23,6 @@ const glx = {
 			uniform.setter = createSetter(gl, uniform);
 		}
 
-		console.log(state);
-
 		gl[GLX_STATE] = state;
 	},
 
