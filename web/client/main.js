@@ -51,11 +51,6 @@ const speeds = [
     1, 2, 5, 10, 25, 50, 100, 250, 500, 1000
 ];
 
-var textureSizeLocation;
-
-var programInfo
-var bufferInfo
-
 let framecount = 0;
 let tickcount = 0;
 let ticksPerSec = 0;
@@ -86,49 +81,15 @@ function initGL() {
     // Get A WebGL context
     canvas = document.getElementById("glcanvas");
 
-    gl = twgl.getWebGLContext(canvas, { antialias: false });
-    if (!gl) {
-        alert('Could not initialize WebGL, try another browser');
-        return;
-    }
-
+    gl = glx.createContext(canvas, 
+        shaders["ca2d-vert"], shaders["ca2d-frag"],
+        { antialias: false });
     gl.disable(gl.DEPTH_TEST);
 
-    // setup a GLSL program
-    programInfo = twgl.createProgramInfo(gl, 
-        [shaders["ca2d-vert"], shaders["ca2d-frag"]],
-        null, null,
-        err => { throw "TWGL error:\n" + err }
-    );
-    var program = programInfo.program;
-
-    gl.useProgram(program);
-
-    glx.initState(gl, program);
-
-
-    // vertex shader attributes
-    const arrays = {
-        a_position: { 
-            numComponents: 2, 
-            data: [
-                -1.0, -1.0,  1.0, -1.0, -1.0,  1.0,
-                -1.0,  1.0,  1.0, -1.0,  1.0,  1.0,
-            ]
-        },
-        a_cellCoord: { 
-            numComponents: 2, 
-            data: [
-                 0.0,  0.0,  1.0,  0.0,  0.0,  1.0,
-                 0.0,  1.0,  1.0,  0.0,  1.0,  1.0
-            ]
-        }
-    };
-    bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
-    twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-
-
-    textureSizeLocation = gl.getUniformLocation(program, "u_worldSize");
+    glx.setAttributes(gl, {
+        a_position  : glx.rectangle(-1.0, -1.0, 2.0, 2.0),
+        a_cellCoord : glx.rectangle( 0.0,  0.0, 1.0, 1.0), 
+    });
 
     viewPort = new ViewportControl(canvas, changed)
 
@@ -262,7 +223,7 @@ function render(){
 
     //draw to canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
+    glx.draw(gl);
 }
 
 function step(ticks = 1) {
@@ -282,7 +243,7 @@ function step(ticks = 1) {
 
         gl.bindTexture(gl.TEXTURE_2D, currentState);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lastState, 0);
-        twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
+        glx.draw(gl);
 
         // lastState is now our new currentState
         [currentState, lastState] = [lastState, currentState];
@@ -316,7 +277,7 @@ function pause() {
 }
 
 function fade() {
-    twgl.setUniforms(programInfo, {
+    glx.setUniforms(programInfo, {
         u_fade: gui.cbxFade.checked
     });
 }
