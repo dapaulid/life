@@ -32,6 +32,7 @@ const examples = {
     "settlers"          : ".7dDDsZ-XP3t.P---Zx.-LWvXH-v-XY--v-TT-Jf-TZLRLXTVLXZ-fB-L-V.n.m-Z--TLtvZvuFt-SDK.--.H3",
     "stabilizing_wave"  : "40w00o408k0a030oB0g245x00001g0Q1w0504A0k0M0108A001480008200oMwa0cw0kw090b4wk4bO2w00002",
     "unclear_death"     : "WXT---n-tv----vLTfXST-Q-Xr--v-T-K-D--Tv-.-----TnX.Z-L-ZXrTXL-tdL-.Wf--P-nTX--Tr-T-PGX3",
+    "race"              : "a00gMc44062gh0020640goa0E1K0gE08A0k00gw2g81g1820k23o1120gg0w108600080O48pxkgwyg32E1000",
 }
 
 const world = {
@@ -393,9 +394,6 @@ function reset() {
         rule: gui.edtRule.value,
     });
 
-    // set the size of the texture
-    //gl.uniform2f(textureSizeLocation, world.width, world.height);
-
     // build initial state
     let init = new Uint32Array(world.width * world.height);
     if (cbxInitial.value == "bigbang") {
@@ -422,7 +420,7 @@ function reset() {
     });
     // initial state
     currentState = glx.createTexture(gl, {
-        src: new Uint8Array(init.buffer),
+        src: init,
         width: world.width,
         height: world.height,
         min: gl.NEAREST,
@@ -430,26 +428,24 @@ function reset() {
         wrap: gl.REPEAT, // needs power of 2
     });
 
+    // generate rule pixel data
+    const rule = new Uint32Array(512);
+    for (let i = 0; i < world.rule.length; i++) {
+        rule[i] = stateColors[world.rule.array[i]];
+    }
+
     glx.setUniforms(gl, {
         u_states  : world.rule.states,
         u_ruleSize: world.rule.length,
         u_worldSize: [world.width, world.height],
-    });
-
-    const tex = new Uint32Array(512);
-    for (let i = 0; i < world.rule.length; i++) {
-        tex[i] = stateColors[world.rule.array[i]];
-    }
-    const ruleTex = glx.createTexture(gl, {
-        src: new Uint8Array(tex.buffer),
-        width: tex.length,
-        height: 1,
-        min: gl.NEAREST,
-        mag: gl.NEAREST,
-        wrap: gl.CLAMP_TO_EDGE, // needs power of 2
-    });
-    glx.setUniforms(gl, {
-        u_rule: ruleTex,
+        u_rule: glx.createTexture(gl, {
+            src: rule,
+            width: rule.length,
+            height: 1,
+            min: gl.NEAREST,
+            mag: gl.NEAREST,
+            wrap: gl.CLAMP_TO_EDGE,
+        }),
     });
 
     // big bang conditions
