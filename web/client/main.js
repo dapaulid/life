@@ -1,10 +1,6 @@
 'use strict';
 
-/**
- * Created by ghassaei on 2/20/16.
- */
 var gl;
-var canvas;
 var currentState;
 var lastState;
 var frameBuffer;
@@ -60,8 +56,6 @@ let stepTimer = new Timer(() => {
     step(ticksPerStep);
 });
 
-//let viewProjectionMat;
-let viewPort;
 let gui;
 
 // our shaders will be loaded into this object in index.html
@@ -69,34 +63,20 @@ const shaders = {};
 // template-string tag used in GLSL shaders
 const glsl = x => x.join('\n');
 
-window.onload = initGL;
-
-const rule = Rule.random(2); //new Rule([0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1])
-
-function initGL() {
+// initialization
+window.onload = function() {
 
     // redirect console output
     guiu.redirectConsole("console");
 
-    // Get A WebGL context
-    canvas = document.getElementById("glcanvas");
-
-    gl = glx.createContext(canvas, 
-        shaders["ca2d-vert"], shaders["ca2d-frag"],
-        { antialias: false });
-    gl.disable(gl.DEPTH_TEST);
-
-    glx.setAttributes(gl, {
-        a_position  : glx.rectangle(-1.0, -1.0, 2.0, 2.0),
-        a_cellCoord : glx.rectangle( 0.0,  0.0, 1.0, 1.0), 
-    });
-
-    viewPort = new ViewportControl(canvas, changed)
-
-    frameBuffer = gl.createFramebuffer();
-
     // init GUI
     gui = guiu.initElements(document, {
+        // the canvas
+        canvas: {
+            event: {
+                dblclick: pause,
+            },
+        },
         // outputs
         outTPS: {},
         outFPS: {},
@@ -113,7 +93,7 @@ function initGL() {
         btnPreviousMark : previousMark,
         btnNextMark     : nextMark,
         btnResetWorld   : reset,
-        btnResetView    : viewPort.reset.bind(viewPort),
+        btnResetView    : resetView,
         btnMutate       : mutate,
         btnRandom       : random,
         // position slider
@@ -133,6 +113,20 @@ function initGL() {
         },
     });
 
+    // init WebGL
+    gl = glx.createContext(gui.canvas, 
+        shaders["ca2d-vert"], shaders["ca2d-frag"],
+        { antialias: false });
+    gl.disable(gl.DEPTH_TEST);
+    glx.setAttributes(gl, {
+        a_position  : glx.rectangle(-1.0, -1.0, 2.0, 2.0),
+        a_cellCoord : glx.rectangle( 0.0,  0.0, 1.0, 1.0), 
+    });
+    frameBuffer = gl.createFramebuffer();
+
+    // create viewport for zooming and moving the canvas
+    gui.viewPort = new ViewportControl(gui.canvas, changed)
+
     // update framerate every second
     setIntervalAndRun(() => {
         gui.outTPS.value = "TPS: " + tickcount;
@@ -150,9 +144,6 @@ function initGL() {
     }
     gui.cbxSize.value = Math.min(1024, maxSize);
     
-
-    canvas.addEventListener('dblclick', pause);
-
     window.addEventListener('keydown', (e) => {
         // handle key
         switch (e.code) {
@@ -213,11 +204,11 @@ function changed() {
 
 function render(){
 
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.viewport(0, 0, gui.canvas.width, gui.canvas.height);
 
     glx.setUniforms(gl, {
         u_tick    : false,
-        u_matrix  : viewPort.matrix,
+        u_matrix  : gui.viewPort.matrix,
         u_world   : currentState,
     });        
 
@@ -277,7 +268,7 @@ function pause() {
 }
 
 function fade() {
-    glx.setUniforms(programInfo, {
+    glx.setUniforms(gl, {
         u_fade: gui.cbxFade.checked
     });
 }
@@ -471,6 +462,10 @@ function reset() {
     updateControls();
     updateTicksPerSec();
     changed();
+}
+
+function resetView() {
+    gui.viewPort.reset();
 }
 
 function setCurrentState(data) {
