@@ -23,6 +23,17 @@ const glx = {
 		// link the program.
 		gl.linkProgram(program);
 
+		// delayed error checking to make use of parallelism
+		if (!gl.getShaderParameter(vertShader, gl.COMPILE_STATUS)) {
+			throw Error("failed to compile vertex shader:\n" + gl.getShaderInfoLog(vertShader));
+		}
+		if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS)) {
+			throw Error("failed to compile fragment shader:\n" + gl.getShaderInfoLog(fragShader));
+		}
+		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+			throw Error("failed to link WebGL program:\n" + gl.getProgramInfoLog(program));
+		}		
+
 		// use it
 		gl.useProgram(program);
 
