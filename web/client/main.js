@@ -421,7 +421,7 @@ function reset() {
     }
 
     // empty texture 
-    lastState = twgl.createTexture(gl, {
+    lastState = glx.createTexture(gl, {
         src: null,
         width: world.width,
         height: world.height,
@@ -430,7 +430,7 @@ function reset() {
         wrap: gl.REPEAT, // needs power of 2
     });
     // initial state
-    currentState = twgl.createTexture(gl, {
+    currentState = glx.createTexture(gl, {
         src: new Uint8Array(init.buffer),
         width: world.width,
         height: world.height,
@@ -449,7 +449,7 @@ function reset() {
     for (let i = 0; i < world.rule.length; i++) {
         tex[i] = stateColors[world.rule.array[i]];
     }
-    const ruleTex = twgl.createTexture(gl, {
+    const ruleTex = glx.createTexture(gl, {
         src: new Uint8Array(tex.buffer),
         width: tex.length,
         height: 1,

@@ -125,6 +125,39 @@ const glx = {
 		gl.drawArrays(gl.TRIANGLES, 0, state.numElements);
 	},
 
+	createTexture: function(gl, options) {
+		// default values
+		Object.assign(options, {
+			target: gl.TEXTURE_2D,
+			internalformat: gl.RGBA,
+			format: gl.RGBA,
+			type: gl.UNSIGNED_BYTE,
+		});
+		const target = options.target;
+		const pixels = options.src && options.src.buffer ? new Uint8Array(options.src.buffer) : options.src;
+		const texture = gl.createTexture();
+		gl.bindTexture(target, texture);
+		gl.texImage2D(target, 
+			0, options.internalformat, 
+			options.width, options.height, 
+			0, options.format, 
+			options.type, pixels);
+		if (options.min) {
+			gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, options.min);
+		}
+		if (options.mag) {
+			gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, options.mag);
+		}
+		if (options.wrap) {
+			gl.texParameteri(target, gl.TEXTURE_WRAP_S, options.wrap);
+			gl.texParameteri(target, gl.TEXTURE_WRAP_T, options.wrap);
+			if (target === gl.TEXTURE_3D) {
+				gl.texParameteri(target, gl.TEXTURE_WRAP_R, options.wrap);
+			}
+		}
+		return texture;
+	},
+
 	rectangle: function(left, top, width, height) {
 		const [right, bottom] = [left+width, top+height];
 		return {
