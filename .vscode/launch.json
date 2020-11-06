@@ -8,7 +8,7 @@
 			"type": "pwa-chrome",
 			"request": "launch",
 			"name": "Run in Chrome",
-			"url": "file://${workspaceFolder}/web/client/index.html"
+			"url": "file://${workspaceFolder}/web/player/index.html"
 		}
 	]
 }
