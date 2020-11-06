@@ -32,8 +32,16 @@ const examples = {
     "settlers"          : ".7dDDsZ-XP3t.P---Zx.-LWvXH-v-XY--v-TT-Jf-TZLRLXTVLXZ-fB-L-V.n.m-Z--TLtvZvuFt-SDK.--.H3",
     "stabilizing_wave"  : "40w00o408k0a030oB0g245x00001g0Q1w0504A0k0M0108A001480008200oMwa0cw0kw090b4wk4bO2w00002",
     "unclear_death"     : "WXT---n-tv----vLTfXST-Q-Xr--v-T-K-D--Tv-.-----TnX.Z-L-ZXrTXL-tdL-.Wf--P-nTX--Tr-T-PGX3",
+    "scatter"           : "snQXaX-a-G.--TYdTSHutft.FrDDfIZf-fSt-tYMQypbDrOVrsJQ-Dumr.KTTo-XD3UnA7tvYT-LVsDX-CJL.2",
     "race"              : "a00gMc44062gh0020640goa0E1K0gE08A0k00gw2g81g1820k23o1120gg0w108600080O48pxkgwyg32E1000",
 }
+/*
+    inv bang:
+
+    "triangle_to_grid"  : "QrehILZSPUZUvQKfbKRJPDXvTBYrRDe--.BvV-WvQZvp--.7vQKPfmCXhTnvG-.-hWvlZVmZZrPvLSL-iXP-T3",
+    "growing_spark"     : "gP000w0wU00wc400604sibwgC-wc225M84i02yk10j05w12bma00e00gM4zzz0018k12Ek84ig03gg102g0iE0",
+    
+*/
 
 const world = {
     width: 256,
@@ -88,6 +96,7 @@ window.onload = function() {
         edtRule: {},
         cbxSize: {},
         cbxInitial: {},
+        nbrDensity: {},
         // buttons -> event handlers
         btnPause        : pause,
         btnTick         : () => step(1),
@@ -113,6 +122,7 @@ window.onload = function() {
             options: { wheelable: true },
         },
     });
+    nbrDensity.value = 20;
 
     // init WebGL
     gl = glx.createContext(gui.canvas, 
@@ -479,7 +489,7 @@ function getCurrentState() {
 }
 
 function random() {
-    gui.edtRule.value = Rule.random(2).encode();
+    gui.edtRule.value = Rule.random(2, gui.nbrDensity.value).encode();
     reset();
 }
 
