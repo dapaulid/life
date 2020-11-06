@@ -7,10 +7,8 @@ html, body {
     display: flex;
     flex-direction: column;
     font-family: "Lucida Grande", sans-serif;
-    overflow: hidden;
 }
 .header, .footer {
-    height: 32px;
     margin: 2px;
     display: flex;
     flex-direction: row;
