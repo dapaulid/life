@@ -1,3 +1,5 @@
+'use strict';
+
 const guiu = {
 
 	initElements: function (document, elementConfig) {

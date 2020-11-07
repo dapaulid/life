@@ -1,3 +1,5 @@
+'use strict';
+
 class SortedArray {
 	constructor() {
 		this.array = null;

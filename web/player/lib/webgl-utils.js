@@ -1,3 +1,5 @@
+'use strict';
+
 const GLX_STATE = Symbol("GLX_STATE");
 
 // our shaders will be loaded into this object in index.html

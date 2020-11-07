@@ -1,4 +1,6 @@
 
+'use strict';
+
 /** 
  * the base64 alphabet used for rule encoding. 
  * it is chosen to be URL friendly and maintain 0 for zero bits. 
