@@ -1,11 +1,77 @@
 'use strict';
 
+// redirect console output
+guiu.redirectConsole("console");
+
+var gl;
+var currentState;
+var lastState;
+var frameBuffer;
+
+const alive = [0.5,1.0,0.7,1.0]
+const stateColors = [
+    color(0x00, 0x00, 0x00),
+    color(0x80, 0xff, 0xb3),
+]
+
+const conway = Rule.generate(2, (cell, counts) => {
+    // 1. Any live cell with two or three live neighbours survives.
+    if ((cell == 1) && ((counts[1] == 2) || (counts[1] == 3))) {
+        return 1;
+    }
+    // 2. Any dead cell with three live neighbours becomes a live cell.
+    if ((cell == 0) && (counts[1] == 3)) {
+        return 1;
+    }
+    // 3. All other live cells die in the next generation. Similarly, all other dead cells stay dead.
+    return 0;
+});
+
+const examples = {
+    "cool_fade"         : "w0a264105jgh0Q0jg2000380U89gab0g000w0g2040Yh00s0goc9598wM040119421I8C80xNiBgggw1CKyZ10",
+    "sperm"             : "m180098038000608040w00200084000w00400803000gxh4G4i0000k0M8040010w0040gwgg400wx000005g2",
+    "moving_sierpinski" : "o8g3dGdhyUi020z0yeIwNpwh2m000BMubx4wlD48jM4gIw04W4h8oJ06qM4hAqQ5w0x024012N5as00ia9p000",
+    "traffic_jam"       : "S-rZp-tStZRX-TP-ZStPXLuFY----CX-XH--XPL---TYLXvf..ndHr3-vv.ZZ-ZXZtOY-U--X--.-JZY-L-.X2",
+    "settlers"          : ".7dDDsZ-XP3t.P---Zx.-LWvXH-v-XY--v-TT-Jf-TZLRLXTVLXZ-fB-L-V.n.m-Z--TLtvZvuFt-SDK.--.H3",
+    "stabilizing_wave"  : "40w00o408k0a030oB0g245x00001g0Q1w0504A0k0M0108A001480008200oMwa0cw0kw090b4wk4bO2w00002",
+    "unclear_death"     : "WXT---n-tv----vLTfXST-Q-Xr--v-T-K-D--Tv-.-----TnX.Z-L-ZXrTXL-tdL-.Wf--P-nTX--Tr-T-PGX3",
+    "scatter"           : "snQXaX-a-G.--TYdTSHutft.FrDDfIZf-fSt-tYMQypbDrOVrsJQ-Dumr.KTTo-XD3UnA7tvYT-LVsDX-CJL.2",
+    "race"              : "a00gMc44062gh0020640goa0E1K0gE08A0k00gw2g81g1820k23o1120gg0w108600080O48pxkgwyg32E1000",
+}
+/*
+    inv bang:
+
+    "triangle_to_grid"  : "QrehILZSPUZUvQKfbKRJPDXvTBYrRDe--.BvV-WvQZvp--.7vQKPfmCXhTnvG-.-hWvlZVmZZrPvLSL-iXP-T3",
+    "growing_spark"     : "gP000w0wU00wc400604sibwgC-wc225M84i02yk10j05w12bma00e00gM4zzz0018k12Ek84ig03gg102g0iE0",
+    
+*/
+
+const world = {
+    width: 256,
+    height: 256,
+    tick: 0,
+    history: null,
+    tempLastMark: null,
+    rule: conway,
+}
+
+const speeds = [
+    1, 2, 5, 10, 25, 50, 100, 250, 500, 1000
+];
+
+let framecount = 0;
+let tickcount = 0;
+let ticksPerSec = 0;
+
+let stepTimer = new Timer(() => {
+    const ticksPerStep = Math.ceil(ticksPerSec / 1000 * stepTimer.interval);
+    step(ticksPerStep);
+});
+
+let gui;
 
 // initialization
-window.onload = function() {
-
-    // redirect console output
-    guiu.redirectConsole("console");
+/*window.onload = */function init() {
 
     // init GUI
     gui = guiu.initElements(document, {
@@ -545,3 +611,5 @@ function randomProperty(obj) {
     var keys = Object.keys(obj);
     return obj[keys[ keys.length * Math.random() << 0]];
 };
+
+init();

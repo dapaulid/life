@@ -1,5 +1,10 @@
 const GLX_STATE = Symbol("GLX_STATE");
 
+// our shaders will be loaded into this object in index.html
+const shaders = {}; 
+// template-string tag used in GLSL shaders
+const glsl = x => x.join('\n');
+
 const glx = {
 
 	createContext: function(canvas, vertSrc, fragSrc, contextAttributes) {
