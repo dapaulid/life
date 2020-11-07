@@ -9,7 +9,7 @@ var METHODS = {
 	error: { verb: 'error', prefix: '[E] ' },
 	warn : { verb: 'warn',  prefix: '[!] ' },
 	info : { verb: 'info',  prefix: '[i] ' },
-	log  : { verb: 'log',   prefix: '[.] ' },			
+	log  : { verb: 'log',   prefix: '[.] ' }
 };
 
 var domConsole = null;

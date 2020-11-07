@@ -1,15 +1,15 @@
-'use strict';
+/* jshint esversion: 6 */
 
 var gl;
 var currentState;
 var lastState;
 var frameBuffer;
 
-const alive = [0.5,1.0,0.7,1.0]
+const alive = [0.5,1.0,0.7,1.0];
 const stateColors = [
     color(0x00, 0x00, 0x00),
     color(0x80, 0xff, 0xb3),
-]
+];
 
 const conway = Rule.generate(2, (cell, counts) => {
     // 1. Any live cell with two or three live neighbours survives.
@@ -34,7 +34,7 @@ const examples = {
     "unclear_death"     : "WXT---n-tv----vLTfXST-Q-Xr--v-T-K-D--Tv-.-----TnX.Z-L-ZXrTXL-tdL-.Wf--P-nTX--Tr-T-PGX3",
     "scatter"           : "snQXaX-a-G.--TYdTSHutft.FrDDfIZf-fSt-tYMQypbDrOVrsJQ-Dumr.KTTo-XD3UnA7tvYT-LVsDX-CJL.2",
     "race"              : "a00gMc44062gh0020640goa0E1K0gE08A0k00gw2g81g1820k23o1120gg0w108600080O48pxkgwyg32E1000",
-}
+};
 /*
     inv bang:
 
@@ -50,7 +50,7 @@ const world = {
     history: null,
     tempLastMark: null,
     rule: conway,
-}
+};
 
 const speeds = [
     1, 2, 5, 10, 25, 50, 100, 250, 500, 1000
@@ -128,7 +128,7 @@ let gui;
     frameBuffer = gl.createFramebuffer();
 
     // create viewport for zooming and moving the canvas
-    gui.viewPort = new ViewportControl(gui.canvas, changed)
+    gui.viewPort = new ViewportControl(gui.canvas, changed);
 
     // update framerate every second
     setIntervalAndRun(() => {
@@ -169,7 +169,7 @@ let gui;
             // which may not be what we want in all cases
             console.debug("global keydown handled while input element was active");
         }        
-    })
+    });
 
     // get initial values
     const params = getUrlParams();
@@ -280,9 +280,9 @@ class History {
     constructor(capacity) {
         this.states = new Map();
         this.ticks = new SortedArray();
-        this.capacity = capacity
+        this.capacity = capacity;
         this.memoryUsage = 0; // bytes
-        this.clear()
+        this.clear();
     }
 
     clear() {
@@ -406,7 +406,7 @@ function reset() {
         init[init.length/2 + world.width/2] = stateColors[0];
     } else if (cbxInitial.value == "random") {
         const probability = 0.15;
-        init = init.map(() => stateColors[Math.random() < probability ? 1 : 0])
+        init = init.map(() => stateColors[Math.random() < probability ? 1 : 0]);
     } else {
         throw Error("Invalid initial state: " + cbxInitial.value);
     }
@@ -467,7 +467,7 @@ function resetView() {
 }
 
 function setCurrentState(data) {
-    gl.bindTexture(gl.TEXTURE_2D, currentState)
+    gl.bindTexture(gl.TEXTURE_2D, currentState);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, world.width, world.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
     changed();
 }
@@ -582,7 +582,7 @@ function color(r, g, b, a = 0xff) {
 
 function setIntervalAndRun(handler, timeout) {
     handler();
-    return setInterval(handler, timeout)
+    return setInterval(handler, timeout);
 }
 
 function setUrlParams(params) {
@@ -607,6 +607,6 @@ function getUrlParams() {
 function randomProperty(obj) {
     var keys = Object.keys(obj);
     return obj[keys[ keys.length * Math.random() << 0]];
-};
+}
 
 init();

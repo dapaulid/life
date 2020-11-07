@@ -1,19 +1,19 @@
 
-'use strict';
+/* jshint esversion: 6 */
 
 /** 
  * the base64 alphabet used for rule encoding. 
  * it is chosen to be URL friendly and maintain 0 for zero bits. 
  */
 const B64_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-";
-const B64_IDX = {}
+const B64_IDX = {};
 for (let i = 0; i < B64_CHARS.length; i++) {
 	B64_IDX[B64_CHARS[i]] = i;
 }
 
 // constants for BigInt operations
-const B64_MASK  = 0x3Fn
-const B64_SHIFT = 6n;
+const B64_MASK  = BigInt(0x3F);
+const B64_SHIFT = BigInt(6);
 
 const NEIGH_SIZE = 9; // size of a 3x3 Moore neighborhood including center
 
@@ -71,9 +71,9 @@ class Rule {
 		if (states != 2) {
 			throw Error("Only 2 states supported so far");
 		}
-		const n = states**NEIGH_SIZE;
+		const n = Math.pow(states, NEIGH_SIZE);
 		const t = density != null ? 1.0 - (density / 100) : Math.random();
-		let array = []
+		let array = [];
 		for (let i = 0; i < n; i++) {
 			array[i] = Math.random() <= t ? 0 : 1;
 		}
@@ -83,7 +83,7 @@ class Rule {
 	}
 
 	static generate(states, func) {
-		let array = []
+		let array = [];
 		let neigh = zeros(NEIGH_SIZE+1); // add one for sentinel
 		while (!neigh[NEIGH_SIZE]) {
 

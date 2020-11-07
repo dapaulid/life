@@ -1,4 +1,4 @@
-'use strict';
+/* jshint esversion: 6 */
 
 const guiu = {
 
@@ -48,14 +48,14 @@ const guiu = {
 		return gui;
 	},
 
-}
+};
 
 function addDefaultEventListener(element, listener) {
 	const tag = element.tagName.toLowerCase();
 	const type = {
 		input: 'input',
 		button: 'click',
-	}[tag]
+	}[tag];
 	if (!type) {
 		throw Error("No default event listener for <" + tag + "> element");
 	}
@@ -64,7 +64,7 @@ function addDefaultEventListener(element, listener) {
 
 class Timer {
 	constructor(handler, interval) {
-		this.handler = handler
+		this.handler = handler;
 		this.interval = interval;
 		this.handle = null;
 	}
