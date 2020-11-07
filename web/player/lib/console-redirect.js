@@ -67,8 +67,6 @@ Object.values(METHODS).forEach(function(method) {
 
 // redirect unhandled exception traces
 window.addEventListener('error', function(e) {
-	console.log(window.location.href);
-	console.log(e.filename);
 	output(METHODS.error, [removeCommonPrefix(window.location.href, e.filename)+':'+e.lineno+': '+e.message]);
 });
 
@@ -86,7 +84,7 @@ function removeCommonPrefix(str, other) {
 	while ((l < str.length) && (l < other.length) && (str[l] === other[l])) {
 		l++;
 	}
-	return str.substring(0, l);
+	return str.substring(l);
 }
 
 })(); // end module	
