@@ -77,7 +77,6 @@ window.onload = function() {
 
     // redirect console output
     guiu.redirectConsole("console");
-    console.log("Redirected console");
 
     // init GUI
     gui = guiu.initElements(document, {
@@ -125,8 +124,6 @@ window.onload = function() {
     });
     nbrDensity.value = 20;
 
-    console.log("Inited GUI");
-
     // init WebGL
     gl = glx.createContext(gui.canvas, 
         shaders["ca2d-vert"], shaders["ca2d-frag"],
@@ -138,12 +135,8 @@ window.onload = function() {
     });
     frameBuffer = gl.createFramebuffer();
 
-    console.log("Inited WebGL");
-
     // create viewport for zooming and moving the canvas
     gui.viewPort = new ViewportControl(gui.canvas, changed)
-
-    console.log("Inited ViewPort");
 
     // update framerate every second
     setIntervalAndRun(() => {
@@ -153,8 +146,6 @@ window.onload = function() {
         gui.outFPS.value = "FPS: " + framecount;
         framecount = 0;
     }, 1000);
-
-    console.log("SetInterval");
 
     // populate world sizes
     const maxSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
