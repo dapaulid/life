@@ -14,8 +14,7 @@ var METHODS = {
 
 var domConsole = null;
 var bufferedEntries = [];
-
-function outputEntry(entry) {
+function checkDomConsole() {
 	// lazily lookup console element
 	if (!domConsole) {
 		// console element available?
@@ -26,8 +25,12 @@ function outputEntry(entry) {
 			bufferedEntries = [];
 		}
 	}
+	return !!domConsole;
+}
+
+function outputEntry(entry) {
 	// console ready?
-	if (domConsole) {
+	if (checkDomConsole()) {
 		// yes -> do it
 		var msg = document.createElement('code');
 		msg.classList.add('console-' + entry.method.verb);
@@ -61,8 +64,28 @@ Object.values(METHODS).forEach(function(method) {
 		output(method, Array.prototype.slice.call(arguments));
 	};
 });
+
+// redirect unhandled exception traces
 window.addEventListener('error', function(e) {
-	output(METHODS.error, [e.filename+':'+e.lineno+': '+e.message]);
+	console.log("guu");
+	output(METHODS.error, [removeCommonPrefix(window.location.href, e.filename)+':'+e.lineno+': '+e.message]);
 });
+
+// assign console when DOM loaded
+window.addEventListener('load', checkDomConsole);
+
+/*
+	helpers
+*/
+function removeCommonPrefix(str, other) {
+	if (!str || !other) {
+		return str;
+	}
+	var l = 0;
+	while ((l < str.length) && (l < other.length) && (str[l] === other[l])) {
+		l++;
+	}
+	return str.substring(0, l);
+}
 
 })(); // end module	
