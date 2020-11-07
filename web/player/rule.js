@@ -11,9 +11,12 @@ for (let i = 0; i < B64_CHARS.length; i++) {
 	B64_IDX[B64_CHARS[i]] = i;
 }
 
+// check for BigInt support
+const hasBigInt = typeof BigInt !== 'undefined';
+
 // constants for BigInt operations
-const B64_MASK  = BigInt(0x3F);
-const B64_SHIFT = BigInt(6);
+const B64_MASK  = hasBigInt ? BigInt(0x3F) : null;
+const B64_SHIFT = hasBigInt ? BigInt(6) : null;
 
 const NEIGH_SIZE = 9; // size of a 3x3 Moore neighborhood including center
 
@@ -30,18 +33,33 @@ class Rule {
 	}
 
 	encode() {
-		const radix = BigInt(this.states);
-		let num = this.array.reduceRight((acc, x) => acc * radix + BigInt(x), BigInt(0));
-		const len = getRuleSize(this.states);
 		let encoded = "";
-		for (let i = 0; i < len; i++) {
-			encoded += B64_CHARS[Number(num & B64_MASK)];
-			num >>= B64_SHIFT;
+		if (this.states == 2) {
+			// easy, needs no BigInt
+			let i = 0;
+			while (i < this.array.length) {
+				let digit = 0;
+				for (let j = 0; j < 6; j++) {
+					digit |= this.array[i] << j;
+					i++;
+				}
+				encoded += B64_CHARS[digit];
+			}
+		} else {
+			needsBigInt();
+			const radix = BigInt(this.states);
+			let num = this.array.reduceRight((acc, x) => acc * radix + BigInt(x), BigInt(0));
+			const len = getRuleSize(this.states);
+			for (let i = 0; i < len; i++) {
+				encoded += B64_CHARS[Number(num & B64_MASK)];
+				num >>= B64_SHIFT;
+			}
 		}
 		return encoded;
 	}
 
 	static decode(str) {
+		let array = [];
 		// determine number of states
 		let states = null;
 		for (let i = 2; i < 256; i++) {
@@ -50,18 +68,28 @@ class Rule {
 				break;
 			}
 		}
-		let num = BigInt(0);
-		for (let i = str.length-1; i >= 0; i--) {
-			num <<= B64_SHIFT;
-			const val = B64_IDX[str[i]];
-			num += BigInt(val);
-		}
-		const radix = BigInt(states);
-		const n = Math.pow(states, NEIGH_SIZE);
-		let array = [];
-		for (let i = 0; i < n; i++) {
-			array[i] = Number(num % radix);
-			num /= radix;
+		if (states == 2) {
+			// easy, needs no BigInt
+			for (let i = 0; i < str.length; i++) {
+				const digit = B64_IDX[str[i]];
+				for (let j = 0; (j < 6) & (array.length < 512); j++) {
+					array.push((digit >> j) & 1);
+				}
+			}
+		} else {
+			needsBigInt();
+			let num = BigInt(0);
+			for (let i = str.length-1; i >= 0; i--) {
+				num <<= B64_SHIFT;
+				const val = B64_IDX[str[i]];
+				num += BigInt(val);
+			}
+			const radix = BigInt(states);
+			const n = Math.pow(states, NEIGH_SIZE);
+				for (let i = 0; i < n; i++) {
+				array[i] = Number(num % radix);
+				num /= radix;
+			}
 		}
 		return new Rule(array);
 	
@@ -120,6 +148,12 @@ class Rule {
 
 	get length() {
 		return this.array.length;
+	}
+}
+
+function needsBigInt() {
+	if (!hasBigInt) {
+		throw Error("Your browser must support BigInt to use rules with more than 2 states");
 	}
 }
 
