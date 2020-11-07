@@ -67,7 +67,8 @@ Object.values(METHODS).forEach(function(method) {
 
 // redirect unhandled exception traces
 window.addEventListener('error', function(e) {
-	console.log("guu");
+	console.log(window.location.href);
+	console.log(e.filename);
 	output(METHODS.error, [removeCommonPrefix(window.location.href, e.filename)+':'+e.lineno+': '+e.message]);
 });
 
