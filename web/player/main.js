@@ -1,8 +1,5 @@
 'use strict';
 
-// redirect console output
-guiu.redirectConsole("console");
-
 var gl;
 var currentState;
 var lastState;
@@ -14,13 +11,6 @@ const stateColors = [
     color(0x80, 0xff, 0xb3),
 ]
 
-console.log("Gugus");
-class Hansli {
-
-};
-console.log("Hansli", Hansli);
-
-console.log("Rule: ", Rule);
 const conway = Rule.generate(2, (cell, counts) => {
     // 1. Any live cell with two or three live neighbours survives.
     if ((cell == 1) && ((counts[1] == 2) || (counts[1] == 3))) {
