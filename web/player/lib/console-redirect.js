@@ -67,7 +67,7 @@ Object.values(METHODS).forEach(function(method) {
 
 // redirect unhandled exception traces
 window.addEventListener('error', function(e) {
-	output(METHODS.error, [removeCommonPrefix(window.location.href, e.filename)+':'+e.lineno+': '+e.message]);
+	output(METHODS.error, [removeCommonPrefix(e.filename, window.location.href)+':'+e.lineno+': '+e.message]);
 });
 
 // assign console when DOM loaded
