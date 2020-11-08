@@ -143,8 +143,7 @@ class ViewportControl {
 		this.changed();
 	}
 
-	handleMouseWheel(e) {
-		e.preventDefault();
+	handleZoomEvent(e, factor) {
 		const [clipX, clipY] = this.getClipSpaceMousePosition(e);
 
 		// position before zooming
@@ -154,7 +153,7 @@ class ViewportControl {
 
 		// multiply the wheel movement by the current zoom level
 		// so we zoom less when zoomed in and more when zoomed out
-		const newZoom = this.camera.zoom * Math.pow(2, e.deltaY * -0.005);
+		const newZoom = this.camera.zoom * factor;
 		this.camera.zoom = Math.max(0.02, Math.min(100, newZoom));
 
 		this.updateViewProjection();
@@ -169,6 +168,11 @@ class ViewportControl {
 		this.camera.y += preZoomY - postZoomY;
 
 		this.changed();
+	}
+
+	handleMouseWheel(e) {
+		e.preventDefault();
+		this.handleZoomEvent(e, Math.pow(2, e.deltaY * -0.005));
 	}
 
 	getTouchDistance(e) {
@@ -199,6 +203,18 @@ class ViewportControl {
 
 	handleTouchEnd(e) {
 		console.debug("handleTouchEnd", e);
+		if (e.touches.length == 1) {
+			// handle transition from multiple to single touch -> moving around
+			const touch = e.touches[0];
+			this.startInvViewProjMat = this.invMatrix;
+			this.startCamera = Object.assign({}, this.camera);
+			this.startClipPos = this.getClipSpaceMousePosition(touch);
+			this.startPos = m3.transformPoint(
+				this.startInvViewProjMat,
+				this.startClipPos);
+			this.startMousePos = [touch.clientX, touch.clientY];
+			this.changed();			
+		}
 	}
 
 	handleTouchMove(e) {
@@ -208,12 +224,8 @@ class ViewportControl {
 			// get current finger distance
 			const oldTouchDistance = this.touchDistance;
 			this.touchDistance = this.getTouchDistance(e);
-
 			// zoom is proportional to change
-			this.camera.zoom *= Math.abs(this.touchDistance / oldTouchDistance); 
-
-			this.updateViewProjection();
-			this.changed();			
+			this.handleZoomEvent(Math.abs(this.touchDistance / oldTouchDistance)); 
 		} else {
 			// handle single touch -> moving around
 			const touch = e.touches[0];
