@@ -210,7 +210,7 @@ class ViewportControl {
 			this.touchDistance = this.getTouchDistance(e);
 
 			// zoom is proportional to change
-			this.camera.zoom *= Math.abs(oldTouchDistance / this.touchDistance); 
+			this.camera.zoom *= Math.abs(this.touchDistance / oldTouchDistance); 
 
 			this.updateViewProjection();
 			this.changed();			
