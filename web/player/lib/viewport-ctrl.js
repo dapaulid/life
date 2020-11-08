@@ -225,7 +225,7 @@ class ViewportControl {
 			const oldTouchDistance = this.touchDistance;
 			this.touchDistance = this.getTouchDistance(e);
 			// zoom is proportional to change
-			this.handleZoomEvent(Math.abs(this.touchDistance / oldTouchDistance)); 
+			this.handleZoomEvent(e, Math.abs(this.touchDistance / oldTouchDistance)); 
 		} else {
 			// handle single touch -> moving around
 			const touch = e.touches[0];
