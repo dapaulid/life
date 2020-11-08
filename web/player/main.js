@@ -25,6 +25,7 @@ const conway = Rule.generate(2, (cell, counts) => {
 });
 
 const examples = {
+    "creatures"         : "oVvoZL-jJ-5vZ.tKNTTvQ-FZJTFuRRZLWrvvEnTDInIrXLjDReVH-JWKQn7f-W-T.nZ-SXTHoA.ZvVR-XZIML3",
     "cool_fade"         : "w0a264105jgh0Q0jg2000380U89gab0g000w0g2040Yh00s0goc9598wM040119421I8C80xNiBgggw1CKyZ10",
     "sperm"             : "m180098038000608040w00200084000w00400803000gxh4G4i0000k0M8040010w0040gwgg400wx000005g2",
     "moving_sierpinski" : "o8g3dGdhyUi020z0yeIwNpwh2m000BMubx4wlD48jM4gIw04W4h8oJ06qM4hAqQ5w0x024012N5as00ia9p000",
@@ -49,7 +50,7 @@ const world = {
     tick: 0,
     history: null,
     tempLastMark: null,
-    rule: conway,
+    rule: examples.creatures,
 };
 
 const speeds = [
@@ -176,7 +177,7 @@ let gui;
     // get initial values
     const params = getUrlParams();
     gui.cbxSize.value = params.size || world.width;
-    gui.edtRule.value = params.rule || randomProperty(examples);
+    gui.edtRule.value = params.rule || world.rule;
 
     reset();
     setIntervalAndRun(updateStatus, 100);
