@@ -115,7 +115,6 @@ let gui;
             options: { wheelable: true },
         },
     });
-    nbrDensity.value = 20;
 
     // init WebGL
     gl = glx.createContext(gui.canvas, 
@@ -489,7 +488,7 @@ function getCurrentState() {
 }
 
 function random() {
-    gui.edtRule.value = Rule.random(2, gui.nbrDensity.value).encode();
+    gui.edtRule.value = Rule.random(2, gui.nbrDensity.value || null).encode();
     reset();
 }
 
@@ -519,10 +518,12 @@ function updateControls() {
     if (world.history.count > 1) {
         gui.rngTick.max = world.history.count-1;
         gui.rngTick.value = world.history.tickToIndex(world.tick);
+        gui.rngTick.disabled = false;
     } else {
         // initial position: make slider appear on the right
         gui.rngTick.max = 1;
         gui.rngTick.value = 1;
+        gui.rngTick.disabled = true;
     }
 }
 
