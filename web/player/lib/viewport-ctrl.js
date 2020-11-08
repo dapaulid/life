@@ -1,4 +1,4 @@
-'use strict';
+/* jshint esversion: 6 */
 
 /**
  * This code is based on https://jsfiddle.net/greggman/mdpxw3n6/
@@ -23,6 +23,7 @@ class ViewportControl {
 		this.startMousePos = null;
 		this.rotate = false;
 		this.mouseDown = false;
+		this.touchDistance = null;
 
 		// setup event listeners
 		this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
@@ -30,6 +31,11 @@ class ViewportControl {
 		window.addEventListener('mouseup', this.handleMouseUp.bind(this));
 		this.canvas.addEventListener('wheel', this.handleMouseWheel.bind(this));
 		window.addEventListener('resize', this.handleResize.bind(this));
+
+		// touch related
+		this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
+		this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
+		this.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this));
 
 		// go to initial state
 		this.reset();
@@ -69,7 +75,7 @@ class ViewportControl {
 		// but basically keeps the aspect ratio when resizing the canvas
 		// NOTE: this seems not to belong into the inverted matrix...
 		const m = Math.min(this.canvas.width, this.canvas.height);
-		this.matrix = m3.scale(this.matrix, m / this.canvas.clientWidth, m / this.canvas.clientHeight)
+		this.matrix = m3.scale(this.matrix, m / this.canvas.clientWidth, m / this.canvas.clientHeight);
 	}
 
 	getClipSpaceMousePosition(e) {
@@ -163,6 +169,56 @@ class ViewportControl {
 		this.camera.y += preZoomY - postZoomY;
 
 		this.changed();
+	}
+
+	getTouchDistance(e) {
+		const x = e.touches[0].clientX - e.touches[1].clientX;
+		const y = e.touches[0].clientY - e.touches[1].clientY;
+		return Math.sqrt(x*x + y*y);
+	}
+
+	handleTouchStart(e) {
+		console.debug("handleTouchStart", e);
+		if (e.touches.length > 1) { 
+			// handle multiple touch -> pinch zooming
+			// Save current finger distance
+			this.touchDistance = this.getTouchDistance(e);
+		} else {
+			// handle single touch -> moving around
+			const touch = e.touches[0];
+			this.startInvViewProjMat = this.invMatrix;
+			this.startCamera = Object.assign({}, this.camera);
+			this.startClipPos = this.getClipSpaceMousePosition(touch);
+			this.startPos = m3.transformPoint(
+				this.startInvViewProjMat,
+				this.startClipPos);
+			this.startMousePos = [touch.clientX, touch.clientY];
+			this.changed();			
+		}
+	}
+
+	handleTouchEnd(e) {
+		console.debug("handleTouchEnd", e);
+	}
+
+	handleTouchMove(e) {
+		e.preventDefault(); // Stop the window from moving
+		if (e.touches.length > 1) { 
+			// handle multiple touch -> pinch zooming
+			// get current finger distance
+			const oldTouchDistance = this.touchDistance;
+			this.touchDistance = this.getTouchDistance(e);
+
+			// zoom is proportional to change
+			this.camera.zoom *= Math.abs(oldTouchDistance / this.touchDistance); 
+
+			this.updateViewProjection();
+			this.changed();			
+		} else {
+			// handle single touch -> moving around
+			const touch = e.touches[0];
+			this.moveCamera(touch);	
+		}		
 	}
 
 	handleResize(e) {
