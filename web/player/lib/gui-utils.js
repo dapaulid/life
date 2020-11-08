@@ -67,17 +67,23 @@ class Timer {
 		this.handler = handler;
 		this.interval = interval;
 		this.handle = null;
+		this.tickCallback = this.tick.bind(this);
+		this.ticks = 0;
+		this.startTime = null;
+		this.overruns = 0;
 	}
 
 	start() {
 		if (!this.active) {
-			this.handle = setInterval(this.handler, this.interval);
+			this.ticks = 0;
+			this.startTime = performance.now();
+			this.handle = setTimeout(this.tickCallback, this.interval);
 		}
 	}
 
 	stop() {
 		if (this.active) {
-			clearInterval(this.handle);
+			clearTimeout(this.handle);
 			this.handle = null;
 		}
 	}
@@ -88,6 +94,24 @@ class Timer {
 			this.stop();
 			this.start();
 		}
+	}
+
+	tick() {
+		this.ticks++;
+		this.handler();
+		const nextTickTime = (this.ticks + 1) * this.interval;
+		const elapsed = performance.now() - this.startTime;
+		let timeout = nextTickTime - elapsed;
+		if (timeout < 0) {
+			// we exceeded the cycle time!
+            this.overruns++;
+            // that's the best we can do for trying to keep up
+            timeout = 0;
+		}
+        // schedule next tick only if not stopped in the meantime
+        if (this.active) {
+            this.handle = setTimeout(this.tickCallback, timeout);
+        }		
 	}
 
 	get active() {

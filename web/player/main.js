@@ -61,9 +61,10 @@ let tickcount = 0;
 let ticksPerSec = 0;
 
 let stepTimer = new Timer(() => {
-    const ticksPerStep = Math.ceil(ticksPerSec / 1000 * stepTimer.interval);
+    const ticksPerStep = ticksPerSec / 1000 * stepTimer.interval;
     step(ticksPerStep);
 });
+const minStepInterval = 1000 / 60; // ms
 
 let gui;
 
@@ -132,6 +133,8 @@ let gui;
 
     // update framerate every second
     setIntervalAndRun(() => {
+        // get rid of "fractional ticks"
+        tickcount = Math.round(tickcount);
         gui.outTPS.value = "TPS: " + tickcount;
         gui.outTPS.classList.toggle("bad", (tickcount < ticksPerSec) && !paused);
         tickcount = 0;        
@@ -232,8 +235,11 @@ function step(ticks = 1) {
 
     // lastState will receive output from fragment shader
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-    
-    for (let i = 0; i < ticks; i++) {
+
+    // determine number of ticks considering last "fractional tick"
+    const intTicks = Math.floor(ticks + tickcount % 1);
+
+    for (let i = 0; i < intTicks; i++) {
 
         gl.bindTexture(gl.TEXTURE_2D, currentState);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lastState, 0);
@@ -250,9 +256,11 @@ function step(ticks = 1) {
             setMark();
         }
 
-        // statistics
         tickcount++;
     }
+
+    // remember "fractional tick"
+    tickcount += ticks - intTicks;
 
     updateControls();
     changed();
@@ -499,7 +507,7 @@ function updateStatus() {
 function updateTicksPerSec() {
     ticksPerSec = speeds[gui.rngSpeed.value];
     gui.outTicksPerSec.value = ticksPerSec + " tick/s";
-    stepTimer.setInterval(Math.max(1000 / ticksPerSec, 50));
+    stepTimer.setInterval(Math.max(1000 / ticksPerSec, minStepInterval));
 }
 
 function updateControls() {
