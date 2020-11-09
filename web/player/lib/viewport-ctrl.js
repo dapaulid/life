@@ -78,11 +78,11 @@ class ViewportControl {
 		this.matrix = m3.scale(this.matrix, m / this.canvas.clientWidth, m / this.canvas.clientHeight);
 	}
 
-	getClipSpaceMousePosition(e) {
+	getClipSpaceMousePosition(clientX, clientY) {
 		// get canvas relative css position
 		const rect = this.canvas.getBoundingClientRect();
-		const cssX = e.clientX - rect.left;
-		const cssY = e.clientY - rect.top;
+		const cssX = clientX - rect.left;
+		const cssY = clientY - rect.top;
 
 		// get normalized 0 to 1 position across and down canvas
 		const normalizedX = cssX / this.canvas.clientWidth;
@@ -98,7 +98,7 @@ class ViewportControl {
 	moveCamera(e) {
 		const pos = m3.transformPoint(
 			this.startInvViewProjMat,
-			this.getClipSpaceMousePosition(e));
+			this.getClipSpaceMousePosition(e.clientX, e.clientY));
 
 		this.camera.x = this.startCamera.x + this.startPos[0] - pos[0];
 		this.camera.y = this.startCamera.y + this.startPos[1] - pos[1];
@@ -135,7 +135,7 @@ class ViewportControl {
 		this.rotate = e.shiftKey;
 		this.startInvViewProjMat = this.invMatrix;
 		this.startCamera = Object.assign({}, this.camera);
-		this.startClipPos = this.getClipSpaceMousePosition(e);
+		this.startClipPos = this.getClipSpaceMousePosition(e.clientX, e.clientY);
 		this.startPos = m3.transformPoint(
 			this.startInvViewProjMat,
 			this.startClipPos);
@@ -143,8 +143,8 @@ class ViewportControl {
 		this.changed();
 	}
 
-	handleZoomEvent(e, factor) {
-		const [clipX, clipY] = this.getClipSpaceMousePosition(e);
+	handleZoomEvent(clientX, clientY, factor) {
+		const [clipX, clipY] = this.getClipSpaceMousePosition(clientX, clientY);
 
 		// position before zooming
 		const [preZoomX, preZoomY] = m3.transformPoint(
@@ -172,7 +172,7 @@ class ViewportControl {
 
 	handleMouseWheel(e) {
 		e.preventDefault();
-		this.handleZoomEvent(e, Math.pow(2, e.deltaY * -0.005));
+		this.handleZoomEvent(e.clientX, e.clientY, Math.pow(2, e.deltaY * -0.005));
 	}
 
 	getTouchDistance(e) {
@@ -192,7 +192,7 @@ class ViewportControl {
 			const touch = e.touches[0];
 			this.startInvViewProjMat = this.invMatrix;
 			this.startCamera = Object.assign({}, this.camera);
-			this.startClipPos = this.getClipSpaceMousePosition(touch);
+			this.startClipPos = this.getClipSpaceMousePosition(touch.clientX, touch.clientY);
 			this.startPos = m3.transformPoint(
 				this.startInvViewProjMat,
 				this.startClipPos);
@@ -208,7 +208,7 @@ class ViewportControl {
 			const touch = e.touches[0];
 			this.startInvViewProjMat = this.invMatrix;
 			this.startCamera = Object.assign({}, this.camera);
-			this.startClipPos = this.getClipSpaceMousePosition(touch);
+			this.startClipPos = this.getClipSpaceMousePosition(touch.clientX, touch.clientY);
 			this.startPos = m3.transformPoint(
 				this.startInvViewProjMat,
 				this.startClipPos);
@@ -224,8 +224,11 @@ class ViewportControl {
 			// get current finger distance
 			const oldTouchDistance = this.touchDistance;
 			this.touchDistance = this.getTouchDistance(e);
+			// zoom into center
+			const clientX = (e.touches[0].clientX + e.touches[1].clientX) * 0.5;
+			const clientY = (e.touches[0].clientY + e.touches[1].clientY) * 0.5;
 			// zoom is proportional to change
-			this.handleZoomEvent(e, Math.abs(this.touchDistance / oldTouchDistance)); 
+			this.handleZoomEvent(clientX, clientY, Math.abs(this.touchDistance / oldTouchDistance)); 
 		} else {
 			// handle single touch -> moving around
 			const touch = e.touches[0];
