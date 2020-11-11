@@ -1,4 +1,4 @@
-'use strict';
+/* jshint esversion: 6 */
 
 const GLX_STATE = Symbol("GLX_STATE");
 
@@ -62,15 +62,17 @@ const glx = {
 		// enumerate uniforms
 		const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
 		for (let i = 0; i < numUniforms; i++) {
-			const info = gl.getActiveUniform(program, i);
-			const uniform = state.uniforms[info.name] = {
+			const info      = gl.getActiveUniform(program, i);
+			const isVector  = info.name.endsWith('[0]');
+			const name      = isVector ? info.name.slice(0, -3) : info.name;
+			const uniform   = state.uniforms[name] = {
 				type    : info.type,
 				location: gl.getUniformLocation(program, info.name),
 			};
 			if (info.type == gl.SAMPLER_2D) {
 				uniform.unit = state.units++;
 			}
-			uniform.setter = createSetter(gl, uniform);
+			uniform.setter = createSetter(gl, uniform, isVector);
 		}
 
 		// enumerate attributes
@@ -176,7 +178,7 @@ const glx = {
 				right,bottom,  right,top,  left,bottom,
 			]),
 			usage: 'STATIC_DRAW',
-		}
+		};
 	},
 
 	getState: function(gl) {
@@ -187,32 +189,49 @@ const glx = {
 		return state;
 	},
 
-}
+};
 
-function createSetter(gl, u) {
-	switch (u.type) {
-		case gl.FLOAT          : return (value) => gl.uniform1f(u.location, value);
-		case gl.FLOAT_VEC2     : return (value) => gl.uniform2f(u.location, ...value);
-		case gl.FLOAT_VEC3     : return (value) => gl.uniform3f(u.location, ...value);
-		case gl.FLOAT_VEC4     : return (value) => gl.uniform4f(u.location, ...value);
-		case gl.INT            : return (value) => gl.uniform1i(u.location, value);
-		case gl.INT_VEC2       : return (value) => gl.uniform12(u.location, ...value);
-		case gl.INT_VEC3       : return (value) => gl.uniform13(u.location, ...value);
-		case gl.INT_VEC4       : return (value) => gl.uniform14(u.location, ...value);
-		case gl.BOOL           : return (value) => gl.uniform1i(u.location, value);
-		case gl.BOOL_VEC2      : return (value) => gl.uniform12(u.location, ...value);
-		case gl.BOOL_VEC3      : return (value) => gl.uniform13(u.location, ...value);
-		case gl.BOOL_VEC4      : return (value) => gl.uniform14(u.location, ...value);
-		case gl.FLOAT_MAT2     : return (value) => gl.uniformMatrix2fv(u.location, false, new Float32Array(value));
-		case gl.FLOAT_MAT3     : return (value) => gl.uniformMatrix3fv(u.location, false, new Float32Array(value));
-		case gl.FLOAT_MAT4     : return (value) => gl.uniformMatrix4fv(u.location, false, new Float32Array(value));
-		case gl.SAMPLER_2D     : 
-			return function(texture) {
-				gl.uniform1i(u.location, u.unit);
-				gl.activeTexture(gl.TEXTURE0 + u.unit);
-				gl.bindTexture(gl.TEXTURE_2D, texture);
-			};
-		case gl.SAMPLER_CUBE   : throw Error("SAMPLER_CUBE not yet implemented");
+function createSetter(gl, u, isVector) {
+	if (!isVector) {
+		switch (u.type) {
+			case gl.FLOAT          : return (value) => gl.uniform1f(u.location, value);
+			case gl.FLOAT_VEC2     : return (value) => gl.uniform2f(u.location, ...value);
+			case gl.FLOAT_VEC3     : return (value) => gl.uniform3f(u.location, ...value);
+			case gl.FLOAT_VEC4     : return (value) => gl.uniform4f(u.location, ...value);
+			case gl.INT            : return (value) => gl.uniform1i(u.location, value);
+			case gl.INT_VEC2       : return (value) => gl.uniform12(u.location, ...value);
+			case gl.INT_VEC3       : return (value) => gl.uniform13(u.location, ...value);
+			case gl.INT_VEC4       : return (value) => gl.uniform14(u.location, ...value);
+			case gl.BOOL           : return (value) => gl.uniform1i(u.location, value);
+			case gl.BOOL_VEC2      : return (value) => gl.uniform12(u.location, ...value);
+			case gl.BOOL_VEC3      : return (value) => gl.uniform13(u.location, ...value);
+			case gl.BOOL_VEC4      : return (value) => gl.uniform14(u.location, ...value);
+			case gl.FLOAT_MAT2     : return (value) => gl.uniformMatrix2fv(u.location, false, new Float32Array(value));
+			case gl.FLOAT_MAT3     : return (value) => gl.uniformMatrix3fv(u.location, false, new Float32Array(value));
+			case gl.FLOAT_MAT4     : return (value) => gl.uniformMatrix4fv(u.location, false, new Float32Array(value));
+			case gl.SAMPLER_2D     : 
+				return function(texture) {
+					gl.uniform1i(u.location, u.unit);
+					gl.activeTexture(gl.TEXTURE0 + u.unit);
+					gl.bindTexture(gl.TEXTURE_2D, texture);
+				};
+			case gl.SAMPLER_CUBE   : throw Error("SAMPLER_CUBE not yet implemented");
+		}
+	} else {
+		switch (u.type) {
+			case gl.FLOAT          : return (value) => gl.uniform1fv(u.location, value, value.length);
+			case gl.FLOAT_VEC2     : return (value) => gl.uniform2fv(u.location, value, value.length);
+			case gl.FLOAT_VEC3     : return (value) => gl.uniform3fv(u.location, value, value.length);
+			case gl.FLOAT_VEC4     : return (value) => gl.uniform4fv(u.location, value, value.length);
+			case gl.INT            : return (value) => gl.uniform1iv(u.location, value, value.length);
+			case gl.INT_VEC2       : return (value) => gl.uniform12v(u.location, value, value.length);
+			case gl.INT_VEC3       : return (value) => gl.uniform13v(u.location, value, value.length);
+			case gl.INT_VEC4       : return (value) => gl.uniform14v(u.location, value, value.length);
+			case gl.BOOL           : return (value) => gl.uniform1iv(u.location, value, value.length);
+			case gl.BOOL_VEC2      : return (value) => gl.uniform12v(u.location, value, value.length);
+			case gl.BOOL_VEC3      : return (value) => gl.uniform13v(u.location, value, value.length);
+			case gl.BOOL_VEC4      : return (value) => gl.uniform14v(u.location, value, value.length);
+		}
 	}
 	throw Error("Unknown WebGL uniform type: " + u.type);
 }
