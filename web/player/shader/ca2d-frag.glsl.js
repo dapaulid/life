@@ -17,6 +17,9 @@ precision mediump float;
 // set this to 1 for debugging
 #define DEBUG 0
 
+#define NEIGH_SIZE 9
+#define MAX_LABELS 8
+
 // returns the logical state of a cell pixel
 #define CELL_STATE(cell)      int(0.5 + cell.g)
 // returns the new cell color
@@ -39,6 +42,7 @@ uniform highp int   u_ruleSize;
 uniform lowp  int   u_states;
 uniform bool        u_tick;
 uniform bool        u_fade;
+uniform vec2        u_neighCoord [NEIGH_SIZE] ;
 
 //------------------------------------------------------------------------------
 // constants
@@ -59,7 +63,20 @@ void main() {
 	}
 
 	lowp int oldState = CELL_STATE(cell);
-	vec2 px = vec2(1.0, 1.0)/u_worldSize;
+	//vec2 px = vec2(1.0, 1.0)/u_worldSize;
+
+	/*
+	int labelCount [MAX_LABELS];
+	for (int j = 0; j < MAX_LABELS; j++) {
+		if (j == idx) {
+			labelCount[j]++;
+		}
+	}*/
+
+	highp int idx = 0;
+	for (int i = NEIGH_SIZE - 1; i >= 0; i--) {
+		idx = idx*u_states + CELL_STATE(texture2D(u_world, v_cellCoord + u_neighCoord[i]));
+	}
 
 	/*
 		determine index into rule array using convolution with exponential weights:
@@ -72,15 +89,6 @@ void main() {
 
 		hint: read the following statements backwards for correct order
 	*/
-	highp int idx      = CELL_STATE(texture2D(u_world, v_cellCoord + vec2( 1.0, -1.0)*px));
-	idx = idx*u_states + CELL_STATE(texture2D(u_world, v_cellCoord + vec2( 0.0, -1.0)*px));
-	idx = idx*u_states + CELL_STATE(texture2D(u_world, v_cellCoord + vec2(-1.0, -1.0)*px));
-	idx = idx*u_states + CELL_STATE(texture2D(u_world, v_cellCoord + vec2(-1.0,  0.0)*px));
-	idx = idx*u_states + CELL_STATE(texture2D(u_world, v_cellCoord + vec2(-1.0,  1.0)*px));
-	idx = idx*u_states + CELL_STATE(texture2D(u_world, v_cellCoord + vec2( 0.0,  1.0)*px));
-	idx = idx*u_states + CELL_STATE(texture2D(u_world, v_cellCoord + vec2( 1.0,  1.0)*px));
-	idx = idx*u_states + CELL_STATE(texture2D(u_world, v_cellCoord + vec2( 1.0,  0.0)*px));
-	idx = idx*u_states + oldState;
 
 #if DEBUG
 	// sanity check

@@ -444,10 +444,26 @@ function reset() {
         rule[i] = stateColors[world.rule.array[i]];
     }
 
+    const [dx, dy] = [1.0 / world.width, 1.0 / world.height];
+    const neighCoord = [
+         0.0 * dx,  0.0 * dy,
+         1.0 * dx,  0.0 * dy,
+         1.0 * dx,  1.0 * dy,
+         0.0 * dx,  1.0 * dy,
+        -1.0 * dx,  1.0 * dy,
+        -1.0 * dx,  0.0 * dy,
+        -1.0 * dx, -1.0 * dy,
+         0.0 * dx, -1.0 * dy,
+         1.0 * dx, -1.0 * dy,
+    ];
+
+    const tmp = gl.getUniformLocation(glx.getState(gl).program, "u_neighCoord[0]");
+    gl.uniform2fv(tmp, neighCoord, 0, neighCoord.length);
+
     glx.setUniforms(gl, {
         u_states  : world.rule.states,
         u_ruleSize: world.rule.length,
-        u_worldSize: [world.width, world.height],
+        //u_worldSize: [world.width, world.height],
         u_rule: glx.createTexture(gl, {
             src: rule,
             width: rule.length,
