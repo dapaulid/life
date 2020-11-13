@@ -5,10 +5,24 @@ var currentState;
 var lastState;
 var frameBuffer;
 
-const alive = [0.5,1.0,0.7,1.0];
+function ci(state, label) {
+    return state | (label << 5);
+}
+
 const stateColors = [
-    color(0x00, 0x00, 0x00),
-    color(0x80, 0xff, 0xb3),
+    color(0x00, 0x00, 0x00, ci(0, 0)),
+    color(0xFF, 0xFF, 0xFF, ci(1, 0)),
+];
+
+const LABEL_COLORS = [
+    [255, 255, 255, ci(0, 0)], // white
+    [255,   0,   0, ci(0, 1)], // red
+    [  0, 128,   0, ci(0, 2)], // green
+    [255, 165,   0, ci(0, 3)], // orange
+    [128,   0, 128, ci(0, 4)], // purple
+    [210, 105,  30, ci(0, 5)], // brown (chocolate)
+    [255, 255,   0, ci(0, 6)], // yellow
+    [255, 192, 203, ci(0, 7)], // pink
 ];
 
 const conway = Rule.generate(2, (cell, counts) => {
@@ -471,6 +485,7 @@ function reset() {
         u_states  : world.rule.states,
         u_ruleSize: world.rule.length,
         u_neighCoord: neighCoord,
+        u_labelColors: glx.colorToVec4(LABEL_COLORS),
         u_rule: glx.createTexture(gl, {
             src: rule,
             width: rule.length,

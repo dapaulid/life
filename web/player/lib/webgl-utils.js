@@ -189,6 +189,11 @@ const glx = {
 		return state;
 	},
 
+	colorToVec4: function(color) {
+		const flat = [].concat.apply([], color);
+		return new Float32Array(flat.map(x => x / 255));
+	},
+
 };
 
 function createSetter(gl, u, isVector) {
