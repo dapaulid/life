@@ -91,6 +91,7 @@ let gui;
         // the canvas
         canvas: {
             event: {
+                click   : handleClick,
                 dblclick: pause,
             },
         },
@@ -216,13 +217,19 @@ function changed() {
     }
     // schedule rendering before the next repaint
     animate = requestAnimationFrame(() => {
-        animate = null;
+        // render a frame
         render();
         framecount++;
+        // allow further render requests
+        animate = null;
     });
 }
 
 function render(){
+
+    // call resize handler for viewport,
+    // as clientWIdth/height may sporadically change without resize event
+    gui.viewPort.handleResize();
 
     gl.viewport(0, 0, gui.canvas.width, gui.canvas.height);
 
@@ -278,6 +285,59 @@ function step(ticks = 1) {
 
     updateControls();
     changed();
+}
+
+function encodeCell(cell) {
+    let x = 0x00000000;
+    x |= (cell.color[0] & 0xFF);
+    x |= (cell.color[1] & 0xFF) << 8;
+    x |= (cell.color[2] & 0xFF) << 16;
+    x |= (cell.state & 0x1F) << 24;
+    x |= (cell.label & 0x07) << 29;
+    return x;
+}
+
+function decodeCell(x) {
+    const cell = {};
+    cell.state = (x >> 24) & 0x1F;
+    cell.label = (x >> 29) & 0x07;
+    cell.color = [
+        x & 0xFF,
+        (x >> 8) & 0xFF,
+        (x >> 16) & 0xFF,
+    ];
+    return cell;
+}
+
+let nextLabel = 1;
+function handleClick(e) {
+    if (gui.viewPort.inputHandled) {
+        // not for us
+        return;
+    }
+
+    const m = Math.min(gui.canvas.clientWidth, gui.canvas.clientHeight);
+
+    let pos = gui.viewPort.translate([e.clientX, e.clientY]);
+    pos[0] *= gui.canvas.clientWidth / m;
+    pos[1] *= gui.canvas.clientHeight / m;
+    if (pos[0] < -1.0 || pos[0] > 1.0 || pos[1] < -1.0 || pos[1] > 1.0) {
+        // outside
+        return;
+    }
+    pos[0] = Math.floor((pos[0] + 1) * 0.5 * world.width);
+    pos[1] = Math.floor((pos[1] + 1) * 0.5 * world.height);
+    let index = pos[1] * world.width + pos[0];
+    console.debug("setting pixel at " + pos + " -> index " + index);
+    let state = getCurrentState();
+    let cell = decodeCell(state[index]);
+    console.debug(cell);
+    if (cell.state != 0) {
+        cell.label = nextLabel;
+        nextLabel = (nextLabel + 1) % 7 + 1;
+    }
+    state[index] = encodeCell(cell);
+    setCurrentState(state);
 }
 
 let paused = false;
@@ -514,7 +574,9 @@ function resetView() {
 
 function setCurrentState(data) {
     gl.bindTexture(gl.TEXTURE_2D, currentState);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, world.width, world.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 
+        world.width, world.height, 0, gl.RGBA, 
+        gl.UNSIGNED_BYTE, new Uint8Array(data.buffer));
     changed();
 }
 
@@ -523,7 +585,7 @@ function getCurrentState() {
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, currentState, 0);
     gl.readPixels(0, 0, world.width, world.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
-    return data;
+    return new Uint32Array(data.buffer);
 }
 
 function random() {

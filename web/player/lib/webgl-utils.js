@@ -194,6 +194,19 @@ const glx = {
 		return new Float32Array(flat.map(x => x / 255));
 	},
 
+	colorToUint32: function(color) {
+		return color[0] | (color[1] << 8) | (color[2] << 16) | (color[3] << 24);
+	},
+
+	uint32ToColor: function(x) {
+		return [
+			x & 0xFF,
+			(x >> 8) & 0xFF,
+			(x >> 16) & 0xFF,
+			(x >> 24) & 0xFF,
+		];
+	},
+
 };
 
 function createSetter(gl, u, isVector) {

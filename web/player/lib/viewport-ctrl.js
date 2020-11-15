@@ -19,11 +19,13 @@ class ViewportControl {
 		this.startInvViewProjMat = null;
 		this.startCamera = null;
 		this.startPos = null;
-		this.startClipPos = null;
 		this.startMousePos = null;
 		this.rotate = false;
 		this.mouseDown = false;
 		this.touchDistance = null;
+
+		// state variables for observers
+		this.inputHandled = false;
 
 		// setup event listeners
 		this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
@@ -52,11 +54,30 @@ class ViewportControl {
 			rotation: 0,
 			zoom: 1,
 		};
+		console.debug("before");
 		// reset aspect ratio
 		this.canvas.width = this.canvas.clientWidth;
 		this.canvas.height = this.canvas.clientHeight;		
+		console.debug("after");
 		// done		
 		this.changed();	
+	}
+
+	resizeCanvas() {
+		const c = this.canvas;
+		if (c.width != c.clientWidth || c.height != c.clientHeight) {
+			// reset aspect ratio
+			c.width = c.clientWidth;
+			c.height = c.clientHeight;
+			this.updateViewProjection();
+			// don't call changed, as this function is inteded to be called
+			// before rendering anyway
+		}
+	}
+
+	translate(pos) {
+		return m3.transformPoint(this.invMatrix,
+			this.getClipSpaceMousePosition(pos[0], pos[1]));
 	}
 
 	updateViewProjection() {
@@ -125,22 +146,18 @@ class ViewportControl {
 		}
 		this.rotate = false;
 		this.mouseDown = false;
-		this.changed();
 	}
 
 	handleMouseDown(e) {
 		e.preventDefault();
+		this.inputHandled = false;
 		this.mouseDown = true;
 
 		this.rotate = e.shiftKey;
 		this.startInvViewProjMat = this.invMatrix;
 		this.startCamera = Object.assign({}, this.camera);
-		this.startClipPos = this.getClipSpaceMousePosition(e.clientX, e.clientY);
-		this.startPos = m3.transformPoint(
-			this.startInvViewProjMat,
-			this.startClipPos);
+		this.startPos = this.translate([e.clientX, e.clientY]);
 		this.startMousePos = [e.clientX, e.clientY];
-		this.changed();
 	}
 
 	handleZoomEvent(clientX, clientY, factor) {
@@ -182,7 +199,7 @@ class ViewportControl {
 	}
 
 	handleTouchStart(e) {
-		console.debug("handleTouchStart", e);
+		this.inputHandled = false;
 		if (e.touches.length > 1) { 
 			// handle multiple touch -> pinch zooming
 			// Save current finger distance
@@ -192,12 +209,8 @@ class ViewportControl {
 			const touch = e.touches[0];
 			this.startInvViewProjMat = this.invMatrix;
 			this.startCamera = Object.assign({}, this.camera);
-			this.startClipPos = this.getClipSpaceMousePosition(touch.clientX, touch.clientY);
-			this.startPos = m3.transformPoint(
-				this.startInvViewProjMat,
-				this.startClipPos);
+			this.startPos = this.translate([touch.clientX, touch.clientY]);
 			this.startMousePos = [touch.clientX, touch.clientY];
-			this.changed();			
 		}
 	}
 
@@ -208,12 +221,8 @@ class ViewportControl {
 			const touch = e.touches[0];
 			this.startInvViewProjMat = this.invMatrix;
 			this.startCamera = Object.assign({}, this.camera);
-			this.startClipPos = this.getClipSpaceMousePosition(touch.clientX, touch.clientY);
-			this.startPos = m3.transformPoint(
-				this.startInvViewProjMat,
-				this.startClipPos);
+			this.startPos = this.translate([touch.clientX, touch.clientY]);
 			this.startMousePos = [touch.clientX, touch.clientY];
-			this.changed();			
 		}
 	}
 
@@ -236,12 +245,19 @@ class ViewportControl {
 		}		
 	}
 
-	handleResize(e) {
-		this.changed();
+	handleResize() {
+		const c = this.canvas;
+		if (c.width != c.clientWidth || c.height != c.clientHeight) {
+			// reset aspect ratio
+			c.width = c.clientWidth;
+			c.height = c.clientHeight;
+			this.changed();
+		}
 	}
 
 	changed() {
 		this.updateViewProjection();
+		this.inputHandled = true;
 		if (this.onchange) {
 			this.onchange();
 		}
