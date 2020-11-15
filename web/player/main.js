@@ -61,6 +61,7 @@ const examples = {
 const world = {
     width: 256,
     height: 256,
+    initial: "bigbang",
     tick: 0,
     history: null,
     tempLastMark: null,
@@ -195,6 +196,7 @@ let gui;
     // get initial values
     const params = getUrlParams();
     gui.cbxSize.value = params.size || world.width;
+    gui.cbxInitial.value = params.initial || world.initial;
     gui.edtRule.value = params.rule || world.rule;
 
     reset();
@@ -478,6 +480,7 @@ function reset() {
 
     setUrlParams({
         size: gui.cbxSize.value,
+        initial: gui.cbxInitial.value,
         rule: gui.edtRule.value,
     });
 
