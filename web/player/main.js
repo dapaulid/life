@@ -112,8 +112,11 @@ let gui;
         btnPreviousMark : previousMark,
         btnNextMark     : nextMark,
         btnResetWorld   : reset,
+        btnZoomIn       : zoomIn,
+        btnZoomOut      : zoomOut,
         btnResetView    : resetView,
         btnMutate       : mutate,
+        btnInvert       : invert,
         btnRandom       : random,
         // position slider
         rngTick: {
@@ -568,6 +571,14 @@ function reset() {
     changed();
 }
 
+function zoomIn() {
+    gui.viewPort.zoom(2.0);
+}
+
+function zoomOut() {
+    gui.viewPort.zoom(0.5);
+}
+
 function resetView() {
     gui.viewPort.reset();
 }
@@ -597,6 +608,17 @@ function mutate() {
     const rule = Rule.decode(gui.edtRule.value);
     rule.mutate();
     gui.edtRule.value = rule.encode();
+    reset();
+}
+
+function invert() {
+    const rule = Rule.decode(gui.edtRule.value).inverted();
+    gui.edtRule.value = rule.encode();
+    if (gui.cbxInitial.selectedIndex == 0) {
+        gui.cbxInitial.selectedIndex = 1;
+    } else if (gui.cbxInitial.selectedIndex == 1) {
+        gui.cbxInitial.selectedIndex = 0;
+    }
     reset();
 }
 

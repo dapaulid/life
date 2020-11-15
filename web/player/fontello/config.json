@@ -71,6 +71,24 @@
       "css": "magic",
       "code": 61648,
       "src": "fontawesome"
+    },
+    {
+      "uid": "0b2b66e526028a6972d51a6f10281b4b",
+      "css": "zoom-in",
+      "code": 59216,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "d25d10efa900f529ad1d275657cfd30e",
+      "css": "zoom-out",
+      "code": 59217,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "14e9aa28bf2a3531274f85194e733b71",
+      "css": "color-adjust",
+      "code": 61472,
+      "src": "mfglabs"
     }
   ]
 }

@@ -54,13 +54,16 @@ class ViewportControl {
 			rotation: 0,
 			zoom: 1,
 		};
-		console.debug("before");
 		// reset aspect ratio
 		this.canvas.width = this.canvas.clientWidth;
 		this.canvas.height = this.canvas.clientHeight;		
-		console.debug("after");
 		// done		
 		this.changed();	
+	}
+
+	zoom(factor) {
+		this.camera.zoom *= factor;
+		this.changed();
 	}
 
 	resizeCanvas() {

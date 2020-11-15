@@ -32,6 +32,12 @@ class Rule {
 		this.array[i] = (this.array[i] + 1) % this.states;
 	}
 
+	inverted() {
+		let array = this.array.map(state => this.states - state - 1);
+		array.reverse();
+		return new Rule(array);
+	}
+
 	encode() {
 		let encoded = "";
 		if (this.states == 2) {
