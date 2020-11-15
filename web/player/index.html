@@ -27,14 +27,18 @@
 </div>
 <canvas class="content" id="canvas"></canvas>
 <div class="footer">
-    <button class="button icon-pause" id="btnPause" title="Pause/Resume"></button>
-    <button class="button icon-to-end" id="btnTick" title="Tick"></button>
-    <button class="button icon-to-start-alt" id="btnPreviousMark" title="Previous mark"></button>
-    <button class="button icon-to-end-alt" id="btnNextMark" title="Next mark"></button>
-    <button class="button icon-ccw" id="btnResetWorld" title="Reset World"></button>
-    <button class="button icon-zoom-in" id="btnZoomIn" title="Zoom in"></button>
-    <button class="button icon-zoom-out" id="btnZoomOut" title="Zoom out"></button>
-    <button class="button icon-resize-normal" id="btnResetView" title="Reset View"></button>
+    <div class="button-group">
+        <button class="button icon-pause" id="btnPause" title="Pause/Resume"></button>
+        <button class="button icon-to-end" id="btnTick" title="Tick"></button>
+        <button class="button icon-to-start-alt" id="btnPreviousMark" title="Previous mark"></button>
+        <button class="button icon-to-end-alt" id="btnNextMark" title="Next mark"></button>
+        <button class="button icon-ccw" id="btnResetWorld" title="Reset World"></button>
+    </div>
+    <div class="button-group">
+        <button class="button icon-zoom-in" id="btnZoomIn" title="Zoom in"></button>
+        <button class="button icon-zoom-out" id="btnZoomOut" title="Zoom out"></button>
+        <button class="button icon-resize-normal" id="btnResetView" title="Reset View"></button>
+    </div>
     <label for="rngTick">Tick:</label>
     <input type="range" id="rngTick" title="Tick" value="1" min="0" max="1">
     <output class="numeric" id="outTick"></output>    

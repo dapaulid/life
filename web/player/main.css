@@ -31,6 +31,12 @@ html, body {
 .footer {
     justify-content: left;
 }
+.button-group {
+    margin: 4px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
 .overlay {
     color: white;
     z-index: 10;
