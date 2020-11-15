@@ -134,10 +134,10 @@ void main() {
 			// handle fade out
 			if (oldState == 1) {
 				// just died
-				RETURN(vec4(0.0, 0.0, 1.0, 0.0)); // blue
-			} else if (cell.b > 0.0) {
+				RETURN(vec4(cell.rgb * 0.5, 0.0)); 
+			} else {
 				// fade out
-				RETURN(vec4(0.0, 0.0, max(cell.b - 0.004, 0.25), 0.0));
+				RETURN(vec4(cell.rgb * 0.97, 0.0));
 			}
 		}
 	}
