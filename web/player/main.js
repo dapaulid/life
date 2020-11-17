@@ -119,6 +119,7 @@ let gui;
         btnMutate       : mutate,
         btnInvert       : invert,
         btnRandom       : random,
+        btnLabel        : labelPatterns,
         // position slider
         rngTick: {
             event: (e) => {
@@ -314,7 +315,69 @@ function decodeCell(x) {
     return cell;
 }
 
-let nextLabel = 1;
+function posToIndex(pos) {
+    const x = pos[0] & (world.width - 1);
+    const y = pos[1] & (world.height - 1);
+    return x + world.width * y;
+}
+
+function indexToPos(i) {
+   return [i % world.width, i / world.height];
+}
+
+function floodFill(cells, startPos, label) {
+
+    const index = posToIndex(startPos);
+    const cell = decodeCell(cells[index]);
+    const oldLabel = cell.label;
+    console.debug("color " + oldLabel + " => " + label);
+
+    let count = 0;
+    const queue = [];
+    for (let pos = startPos; pos != null; pos = queue.pop()) {
+        const index = posToIndex(pos);
+        const cell = decodeCell(cells[index]);
+        if ((cell.state !== 0) && (cell.label == oldLabel)) {
+            cell.color = LABEL_COLORS[label];
+            cell.label = label;
+            cells[index] = encodeCell(cell);
+            count++;
+
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (dx || dy) {
+                        queue.push([pos[0] + dx, pos[1] + dy]);
+                    }
+                }   
+            }
+        }
+    }
+    return count;
+}
+
+function labelPatterns() {
+    numPatterns = 0;
+
+    let state = getCurrentState();
+
+    const startTime = performance.now();
+    let nextLabel = 2;
+    for (let i = 0; i < state.length; i++) {
+        const cell = state[i];
+        if (((cell & 0x1F000000) != 0) && ((cell & 0xE0000000) == 0)) {
+            const count = floodFill(state, indexToPos(i), nextLabel);
+            if (count > 0) {
+                numPatterns++;
+                nextLabel = (nextLabel - 2 + 1) % 6 + 2;
+            }
+        }
+    }
+    console.debug("Labeled " + numPatterns + " patterns in " + (performance.now() - startTime) + " ms");    
+    setCurrentState(state);
+
+    changed();
+}
+
 function handleClick(e) {
     if (gui.viewPort.inputHandled) {
         // not for us
@@ -332,9 +395,16 @@ function handleClick(e) {
     }
     pos[0] = Math.floor((pos[0] + 1) * 0.5 * world.width);
     pos[1] = Math.floor((pos[1] + 1) * 0.5 * world.height);
+
+    let state = getCurrentState();
+    const count = floodFill(state, pos, 1);
+    if (count > 0) {
+        changed();
+    }
+    console.debug("Filled pixels:", count);
+    /*
     let index = pos[1] * world.width + pos[0];
     console.debug("setting pixel at " + pos + " -> index " + index);
-    let state = getCurrentState();
     let cell = decodeCell(state[index]);
     console.debug(cell);
     if (cell.state != 0) {
@@ -342,6 +412,7 @@ function handleClick(e) {
         nextLabel = (nextLabel + 1) % 7 + 1;
     }
     state[index] = encodeCell(cell);
+    */
     setCurrentState(state);
 }
 
@@ -655,6 +726,10 @@ function updateControls() {
 
 function setTick(tick) {
     world.tick = tick;
+
+    if (world.tick == Math.max(world.width, world.height) / 2) {
+        labelPatterns();
+    }
 }
 
 function setMark() {
