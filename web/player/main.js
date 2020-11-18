@@ -49,6 +49,7 @@ const examples = {
     "unclear_death"     : "WXT---n-tv----vLTfXST-Q-Xr--v-T-K-D--Tv-.-----TnX.Z-L-ZXrTXL-tdL-.Wf--P-nTX--Tr-T-PGX3",
     "scatter"           : "snQXaX-a-G.--TYdTSHutft.FrDDfIZf-fSt-tYMQypbDrOVrsJQ-Dumr.KTTo-XD3UnA7tvYT-LVsDX-CJL.2",
     "race"              : "a00gMc44062gh0020640goa0E1K0gE08A0k00gw2g81g1820k23o1120gg0w108600080O48pxkgwyg32E1000",
+    "sand"              : "2aM000e00wg088wp10wgy0yi11xw0wF04y8g00g8f50ag021x1pmw62004wp4A80aM0Ma1y40g1g00b03cq0a0",
 };
 /*
     inv bang:
@@ -331,14 +332,16 @@ function floodFill(cells, startPos, label) {
     const cell = decodeCell(cells[startIndex]);
     const oldLabel = cell.label;
 
+    const color = LABEL_COLORS[label];
+    const newCell = color[0] | (color[1] << 8) | (color[2] << 16) | (label << 29);
+
+
     let count = 0;
     const queue = [];
     for (let index = startIndex; index != null; index = queue.pop()) {
-        const cell = decodeCell(cells[index]);
-        if ((cell.state !== 0) && (cell.label == oldLabel)) {
-            cell.color = LABEL_COLORS[label];
-            cell.label = label;
-            cells[index] = encodeCell(cell);
+        let cell = cells[index];
+        if (((cell & 0x1F000000) !== 0) && ((cell & 0xE0000000) === 0)) {
+            cells[index] = newCell | (cell & 0x1F000000);
             count++;
             const pos = indexToPos(index);
             for (let dy = -1; dy <= 1; dy++) {
@@ -350,8 +353,6 @@ function floodFill(cells, startPos, label) {
             }
         }
     }
-
-    console.debug("color " + oldLabel + " => " + label + ", " + count);
 
     return count;
 }
