@@ -322,36 +322,37 @@ function posToIndex(pos) {
 }
 
 function indexToPos(i) {
-   return [i % world.width, i / world.height];
+   return [i % world.width, i / world.width];
 }
 
 function floodFill(cells, startPos, label) {
 
-    const index = posToIndex(startPos);
-    const cell = decodeCell(cells[index]);
+    const startIndex = posToIndex(startPos);
+    const cell = decodeCell(cells[startIndex]);
     const oldLabel = cell.label;
-    console.debug("color " + oldLabel + " => " + label);
 
     let count = 0;
     const queue = [];
-    for (let pos = startPos; pos != null; pos = queue.pop()) {
-        const index = posToIndex(pos);
+    for (let index = startIndex; index != null; index = queue.pop()) {
         const cell = decodeCell(cells[index]);
         if ((cell.state !== 0) && (cell.label == oldLabel)) {
             cell.color = LABEL_COLORS[label];
             cell.label = label;
             cells[index] = encodeCell(cell);
             count++;
-
+            const pos = indexToPos(index);
             for (let dy = -1; dy <= 1; dy++) {
                 for (let dx = -1; dx <= 1; dx++) {
                     if (dx || dy) {
-                        queue.push([pos[0] + dx, pos[1] + dy]);
+                        queue.push(posToIndex([pos[0] + dx, pos[1] + dy]));
                     }
                 }   
             }
         }
     }
+
+    console.debug("color " + oldLabel + " => " + label + ", " + count);
+
     return count;
 }
 
