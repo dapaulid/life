@@ -59,14 +59,20 @@ const examples = {
     
 */
 
+const default_config = {
+    size: 256,
+    initial: 'bigbang',
+    rule: examples.creatures,
+};
+
 const world = {
-    width: 256,
-    height: 256,
-    initial: "bigbang",
+    config: null,
+    width: null,
+    height: null,
+    rule: null,
     tick: 0,
     history: null,
     tempLastMark: null,
-    rule: examples.creatures,
 };
 
 const speeds = [
@@ -121,6 +127,7 @@ let gui;
         btnInvert       : invert,
         btnRandom       : random,
         btnLabel        : labelPatterns,
+        btnSaveWorld    : saveWorld,
         // position slider
         rngTick: {
             event: (e) => {
@@ -195,11 +202,11 @@ let gui;
         }        
     });
 
-    // get initial values
-    const params = getUrlParams();
-    gui.cbxSize.value = params.size || world.width;
-    gui.cbxInitial.value = params.initial || world.initial;
-    gui.edtRule.value = params.rule || world.rule;
+    // read configuration from URL
+    world.config = getUrlParams(default_config);
+    gui.cbxSize.value = world.config.size;
+    gui.cbxInitial.value = world.config.initial;
+    gui.edtRule.value = world.config.rule;
 
     reset();
     setIntervalAndRun(updateStatus, 100);
@@ -544,32 +551,33 @@ class History {
 
 function reset() {
 
-    // update world properties from GUI
-    world.width = gui.cbxSize.value;
-    world.height = gui.cbxSize.value;
-    world.rule = Rule.decode(gui.edtRule.value);
+    // update world config from GUI
+    world.config = {};
+    world.config.size = gui.cbxSize.value;
+    world.config.rule = gui.edtRule.value;
+    world.config.initial = gui.cbxInitial.value;
+    setUrlParams(world.config);
+
+    // initialize world state from config
+    world.width = world.config.size;
+    world.height = world.config.size;
+    world.rule = Rule.decode(world.config.rule);
     world.history = new History(1024*1024*100);
     world.tempLastMark = null;
 
-    setUrlParams({
-        size: gui.cbxSize.value,
-        initial: gui.cbxInitial.value,
-        rule: gui.edtRule.value,
-    });
-
     // build initial state
     let init = new Uint32Array(world.width * world.height);
-    if (cbxInitial.value == "bigbang") {
+    if (world.config.initial == "bigbang") {
         init.fill(stateColors[0]);
         init[init.length/2 + world.width/2] = stateColors[1];
-    } else if (cbxInitial.value == "invbang") {
+    } else if (world.config.initial == "invbang") {
         init.fill(stateColors[1]);
         init[init.length/2 + world.width/2] = stateColors[0];
-    } else if (cbxInitial.value == "random") {
+    } else if (world.config.initial == "random") {
         const probability = 0.15;
         init = init.map(() => stateColors[Math.random() < probability ? 1 : 0]);
     } else {
-        throw Error("Invalid initial state: " + cbxInitial.value);
+        throw Error("Invalid initial state: " + world.config.initial);
     }
 
     // empty texture 
@@ -784,6 +792,21 @@ function nextMark() {
     return tick;
 }
 
+function downloadObjectAsJson(exportObj, exportName){
+    const json = JSON.stringify(exportObj, null, 2);
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json);
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", exportName + ".json");
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
+function saveWorld() {
+    downloadObjectAsJson(world.config, world.config.rule);
+}
+
 //------------------------------------------------------------------------------
 // helpers
 //------------------------------------------------------------------------------
@@ -807,8 +830,8 @@ function setUrlParams(params) {
     window.history.replaceState(null, '', location.pathname + '?' + searchParams.toString());
 }
 
-function getUrlParams() {
-    const params = {};
+function getUrlParams(defaults) {
+    const params = Object.assign({}, defaults);
     const searchParams = new URLSearchParams(location.search);
     for (let entry of searchParams.entries()) {
         params[entry[0]] = entry[1];

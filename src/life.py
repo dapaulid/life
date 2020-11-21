@@ -55,7 +55,7 @@ rule = Rule.load("life")
 
 # create a world governed by this rule
 world = World(rule, 
-    radius=50, 
+    radius=128, 
     metrics=[Exploration, Compressibility, Population, Patterns, Cyclic]
 )
 
