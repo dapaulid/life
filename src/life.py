@@ -35,27 +35,27 @@ from metrics.patterns import Patterns
 
 # create some random rule
 geni = RuleGenerator(2)
-"""
 while True:
     rule = geni.random()
     # avoid "flicker-worlds"
     rule.array[0] = 0
 
-    world = World(rule, radius=50, metrics=[Exploration])
-    world.advance(200)
+    world = World(rule, radius=64, metrics=[Patterns])
+    world.advance(64*2)
     sys.stdout.write(".")
     sys.stdout.flush()
     pop = world.get_population()
-    if pop[0] > 0.01 and pop[0] < 0.1 and world.metrics[0].value > 10:
+    if pop[0] > 0.01 and pop[0] < 0.1 and world.metrics[0].value < 100:
         break
 # end while
 rule.save("last_random")
-"""
-rule = Rule.load("life")
+
+#rule = Rule.load("life")
+#rule = geni.random()
 
 # create a world governed by this rule
 world = World(rule, 
-    radius=128, 
+    radius=64, 
     metrics=[Exploration, Compressibility, Population, Patterns, Cyclic]
 )
 
@@ -64,6 +64,7 @@ world = World(rule,
 # display the world over time
 plot = Plot()
 plot.show(world)
+print(rule.encode())
 
 #-------------------------------------------------------------------------------
 # end of file

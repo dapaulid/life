@@ -16,6 +16,8 @@
 import np
 import json
 import os
+import functools
+import math
 
 #-------------------------------------------------------------------------------
 # constants
@@ -27,6 +29,17 @@ NEIGH_KERNEL = np.array(
     [5, 0, 1],
     [6, 7, 8]]
 )
+
+
+## the base64 alphabet used for rule encoding. 
+## it is chosen to be URL friendly and maintain 0 for zero bits. 
+B64_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-"
+B64_IDX = {}
+for i in range(len(B64_CHARS)):
+	B64_IDX[B64_CHARS[i]] = i
+# end for
+B64_MASK  = 0x3F
+B64_SHIFT = 6
 
 #-------------------------------------------------------------------------------
 # class definition
@@ -58,6 +71,43 @@ class Rule:
 		new_cells = self.array[idx] # same as self.arr.take(idx), but seems faster
 		return new_cells, idx
 	# end function
+
+    #---------------------------------------------------------------------------
+    ## returns the string representation (base64) of this rule
+	def encode(self):
+		encoded = ""
+		num = functools.reduce(lambda acc, x: acc * self.states + int(x), self.array[::-1], 0)
+		for i in range(Rule.get_base64_size(self.states)):
+			encoded += B64_CHARS[num & B64_MASK]
+			num >>= B64_SHIFT
+		# end for
+		return encoded		
+	# end function
+
+	@staticmethod
+	def decode(str):
+		# determine number of states
+		states = None
+		for i in range(2, 256):
+			if Rule.get_base64_size(i) == len(str):
+				states = i
+				break
+			# end if
+		# end if
+		num = 0
+		for c in str[::-1]:
+			num <<= B64_SHIFT
+			num += B64_IDX[c]
+		# end for
+		n = states ** 9
+		array = [None] * n
+		for i in range(n):
+			array[i] = num % states
+			num //= states
+		# end for
+		print(array)
+		return Rule(array)
+	# end function	
 
 	def get_count(self):
 		return np.bincount(self.array, minlength=self.states) / self.size	
@@ -94,6 +144,24 @@ class Rule:
 			state = json.load(f)
 		# end with
 		return Rule(state['array'])
+	# end function
+
+    #---------------------------------------------------------------------------
+    ## constructs a rule from a given (big) integer
+	@staticmethod
+	def from_int(value, states):
+		n = Rule.get_array_size(states)
+		array = [0] * n
+		for i in range(n):
+			array[i] = value % states
+			value //= states
+		# end for
+		return Rule(array)
+	# end function	
+
+	@staticmethod
+	def get_base64_size(states):
+		return math.ceil(states**9 * math.log(states)/math.log(64))
 	# end function
 
 # end class
