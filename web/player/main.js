@@ -65,6 +65,11 @@ const default_config = {
     rule: examples.creatures,
 };
 
+const default_settings = {
+    fade: false,
+    speed: 0, // index
+};
+
 const world = {
     config: null,
     width: null,
@@ -176,7 +181,6 @@ let gui;
         const label = (size > 4096 ? "⚠️" : "") + size;
         gui.cbxSize.add(new Option(label, size));
     }
-    gui.cbxSize.value = Math.min(1024, maxSize);
     
     window.addEventListener('keydown', (e) => {
         // handle key
@@ -202,9 +206,23 @@ let gui;
         }        
     });
 
+    // handle persistent settings
+    const settings = guiu.loadSettings();
+    gui.rngSpeed.value = settings.speed;
+    gui.cbxFade.checked = settings.fade;
+    fade();
+
+
+    window.addEventListener('beforeunload', () => {
+        const settings = {};
+        settings.speed = gui.rngSpeed.value;
+        settings.fade = gui.cbxFade.checked;
+        guiu.saveSettings(settings);
+    });
+
     // read configuration from URL
     world.config = getUrlParams(default_config);
-    gui.cbxSize.value = world.config.size;
+    gui.cbxSize.value =  Math.min(world.config.size, maxSize);
     gui.cbxInitial.value = world.config.initial;
     gui.edtRule.value = world.config.rule;
 

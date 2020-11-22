@@ -48,7 +48,22 @@ const guiu = {
 		return gui;
 	},
 
+	loadSettings(defaults, path = null) {
+		const key = getStorageKey(path);
+		const settings = JSON.parse(localStorage.getItem(key));
+		return Object.assign({}, defaults, settings);
+	},
+
+	saveSettings(settings, path = null) {
+		const key = getStorageKey(path);
+		localStorage.setItem(key, JSON.stringify(settings));
+	},
+
 };
+
+function getStorageKey(path) {
+	return window.location.pathname + '/settings/' + (path ? path : "");
+}
 
 function addDefaultEventListener(element, listener) {
 	const tag = element.tagName.toLowerCase();
