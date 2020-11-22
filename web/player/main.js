@@ -66,7 +66,7 @@ const default_config = {
 };
 
 const default_settings = {
-    fade: false,
+    fade: true,
     speed: 0, // index
 };
 
