@@ -67,7 +67,7 @@ const default_config = {
 
 const default_settings = {
     fade: true,
-    speed: 0, // index
+    speed: 5, // index
 };
 
 const world = {
