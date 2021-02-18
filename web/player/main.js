@@ -50,12 +50,14 @@ const examples = {
     "scatter"           : "snQXaX-a-G.--TYdTSHutft.FrDDfIZf-fSt-tYMQypbDrOVrsJQ-Dumr.KTTo-XD3UnA7tvYT-LVsDX-CJL.2",
     "race"              : "a00gMc44062gh0020640goa0E1K0gE08A0k00gw2g81g1820k23o1120gg0w108600080O48pxkgwyg32E1000",
     "sand"              : "2aM000e00wg088wp10wgy0yi11xw0wF04y8g00g8f50ag021x1pmw62004wp4A80aM0Ma1y40g1g00b03cq0a0",
+    "cool_maze"         : "300000000w0g0000A00100000ww0g80000000000My00000000Mg001k00080028800000000B2000400g0yw2",
 };
 /*
     inv bang:
 
     "triangle_to_grid"  : "QrehILZSPUZUvQKfbKRJPDXvTBYrRDe--.BvV-WvQZvp--.7vQKPfmCXhTnvG-.-hWvlZVmZZrPvLSL-iXP-T3",
     "growing_spark"     : "gP000w0wU00wc400604sibwgC-wc225M84i02yk10j05w12bma00e00gM4zzz0018k12Ek84ig03gg102g0iE0",
+    "cool_maze"         : "300000000w0g0000A00100000ww0g80000000000My00000000Mg001k00080028800000000B2000400g0yw2",
     
 */
 
